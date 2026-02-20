@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LodoClaw System</title>
+<style>
+*{margin:0;padding:0}body{font-family:monospace;background:linear-gradient(135deg,#0f0f23,#1a1a3e);min-height:100vh;color:#00ff88}.container{max-width:800px;margin:0 auto;padding:2rem}h1{text-align:center;margin-bottom:1rem;text-shadow:0 0 20px rgba(0,255,136,.5)}.status-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}.status-card{background:rgba(0,255,136,.1);border:1px solid #00ff88;border-radius:8px;padding:1rem;text-align:center}.status-card.active{box-shadow:0 0 15px rgba(0,255,136,.3)}input,button{font-family:inherit;padding:.75rem 1rem;border-radius:6px;border:1px solid #00ff88}input{width:100%;background:rgba(0,0,0,.4);color:#00ff88;margin-bottom:1rem}button{background:#00ff88;color:#0f0f23;border:none;cursor:pointer;font-weight:bold;width:100%}button:hover{background:#00cc6a}.result{margin-top:1.5rem;padding:1rem;background:rgba(0,0,0,.5);border-radius:8px;border-left:4px solid #00ff88}.celebration{position:fixed;top:0;left:0;right:0;padding:1rem;background:linear-gradient(90deg,#00ff88,#00cc6a);color:#0f0f23;font-weight:bold;text-align:center;animation:slideDown .5s ease;z-index:1000}@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div id="celebration-banner" class="celebration" style="display:none"></div>
+<div class="container">
+<h1>LodoClaw System</h1>
+<p style="text-align:center;margin-bottom:2rem;color:#888">2-Pass Verification | 4-Tier Safety</p>
+<div class="status-bar">
+<div class="status-card active">Tier 1<br><small>Input</small></div>
+<div class="status-card active">Tier 2<br><small>Rate Limit</small></div>
+<div class="status-card active">Tier 3<br><small>Sanitize</small></div>
+<div class="status-card active">Tier 4<br><small>Output</small></div>
+</div>
+<input type="text" id="input" placeholder="Enter data for LodoClaw verification...">
+<button id="verify-btn">Verify (LodoClaw 2-Pass)</button>
+<div id="result" class="result" style="display:none"></div>
+</div>
+<script>
+const API='/api';const banner=document.getElementById('celebration-banner');const resultEl=document.getElementById('result');const inputEl=document.getElementById('input');const btn=document.getElementById('verify-btn');
+function showCelebration(msg){banner.textContent=msg;banner.style.display='block';setTimeout(()=>banner.style.display='none',3000)}
+async function loadStatus(){try{const r=await fetch(API+'/lodoclaw/status');const d=await r.json();if(d.status==='ACTIVE')showCelebration('LodoClaw Online - '+d.totalCalls+' verifications')}catch(e){}}
+btn.onclick=async()=>{const input=inputEl.value.trim();if(!input){showCelebration('Enter data first!');return}btn.disabled=true;try{const r=await fetch(API+'/lodoclaw/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({input})});const d=await r.json();if(r.ok){resultEl.style.display='block';resultEl.innerHTML='<strong>Pass 1:</strong> '+d.result.pass1+'<br><strong>Pass 2:</strong> '+d.result.pass2;showCelebration(d.celebration||'Verification Success!')}else{resultEl.style.display='block';resultEl.textContent='Error: '+(d.error||r.statusText)}}catch(e){resultEl.style.display='block';resultEl.textContent='Error: '+e.message}btn.disabled=false}
+loadStatus();
+</script>
+</body>
+</html>
