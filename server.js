@@ -17,7 +17,7 @@ if (!fs.existsSync(path.dirname(STORAGE_PATH))) {
 
 function lodoclawVerify(input, pass) {
   pass = pass || 1;
-  const hash1 = Buffer.from(input).toString('base64').slice(0, 16);
+  const hash1 = require('crypto').createHash('md5').update(input).digest('hex').slice(0, 16);
   const hash2 = require('crypto').createHash('sha256').update(input + pass).digest('hex').slice(0, 16);
   return pass === 1 ? hash1 : hash2;
 }
