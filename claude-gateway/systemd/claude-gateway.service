@@ -1,0 +1,24 @@
+[Unit]
+Description=Mr. Crab — Claude AI Gateway Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mrcrab
+Group=mrcrab
+WorkingDirectory=/opt/mrcrab
+EnvironmentFile=/opt/mrcrab/.env
+ExecStart=/opt/mrcrab/.venv/bin/python main.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mrcrab
+
+# Resource limits
+MemoryMax=1G
+CPUQuota=80%
+
+[Install]
+WantedBy=multi-user.target
