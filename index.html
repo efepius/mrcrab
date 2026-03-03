@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kimmy beta</title>
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --ok: #166534;
+      --ok-bg: #dcfce7;
+      --err: #991b1b;
+      --err-bg: #fee2e2;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+      padding: 24px 12px;
+    }
+
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 42px;
+      line-height: 1.1;
+    }
+
+    .beta {
+      font-size: 16px;
+      color: #2563eb;
+      font-weight: 700;
+      vertical-align: super;
+      margin-left: 6px;
+    }
+
+    .sub {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .card {
+      text-align: left;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.06);
+    }
+
+    .card-title {
+      margin: 0 0 10px;
+      font-size: 12px;
+      color: #6b7280;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .status {
+      margin-bottom: 12px;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      border: 1px solid transparent;
+    }
+    .status.err {
+      color: var(--err);
+      background: var(--err-bg);
+      border-color: #fecaca;
+    }
+    .status.ok {
+      color: var(--ok);
+      background: var(--ok-bg);
+      border-color: #bbf7d0;
+    }
+    .status.note {
+      color: #1e3a8a;
+      background: #dbeafe;
+      border-color: #bfdbfe;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 680px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      color: #374151;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    }
+
+    .persona-preview {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #4b5563;
+      background: #f9fafb;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      min-height: 40px;
+    }
+
+    .actions {
+      margin-top: 14px;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      padding: 12px 14px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      background: var(--primary);
+      cursor: pointer;
+    }
+    button:hover { background: var(--primary-hover); }
+    button:disabled { opacity: .7; cursor: wait; }
+
+    .foot {
+      margin-top: 12px;
+      color: #6b7280;
+      font-size: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .links {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      font-size: 13px;
+    }
+    .links a { color: #1d4ed8; text-decoration: none; }
+    .links a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Kimmy<span class="beta">beta</span></h1>
+    <p class="sub">AI-powered survey assistant — powered by Claude</p>
+
+    <section class="card">
+      <p class="card-title">Connect to Claude AI</p>
+      <div id="status" class="status note">Ready to connect.</div>
+
+      <div class="grid">
+        <div class="field">
+          <label for="model">Model</label>
+          <select id="model">
+            <option value="claude-sonnet-4-20250514">Claude Sonnet 4 (Fast)</option>
+            <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="serverUrl">Server URL</label>
+          <input id="serverUrl" type="text" placeholder="http://localhost:3000" />
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:12px;">
+        <div class="field">
+          <label for="personaName">Persona Name</label>
+          <input id="personaName" type="text" value="Alex" />
+        </div>
+        <div class="field">
+          <label for="ageRange">Age Range</label>
+          <select id="ageRange">
+            <option>18-24</option>
+            <option selected>25-34</option>
+            <option>35-44</option>
+            <option>45-54</option>
+            <option>55+</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top:12px;">
+        <div class="field">
+          <label for="responseStyle">Response Style</label>
+          <select id="responseStyle">
+            <option selected>Natural</option>
+            <option>Professional</option>
+            <option>Friendly</option>
+            <option>Concise</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="personaPreview" class="persona-preview"></div>
+
+      <div class="actions">
+        <button id="connectBtn" type="button">Connect & Start Earning</button>
+      </div>
+
+      <div class="foot">
+        Claude API key is stored securely on the server (`.env`). No keys are exposed to the browser.
+      </div>
+    </section>
+
+    <div class="links">
+      <a href="/kimmy/earn.html">Open Earn Page</a>
+      <a href="/api/health" target="_blank" rel="noopener">API Health</a>
+    </div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const connectBtn = document.getElementById('connectBtn');
+    const modelEl = document.getElementById('model');
+    const serverUrlEl = document.getElementById('serverUrl');
+    const personaNameEl = document.getElementById('personaName');
+    const ageRangeEl = document.getElementById('ageRange');
+    const responseStyleEl = document.getElementById('responseStyle');
+    const personaPreviewEl = document.getElementById('personaPreview');
+
+    function setStatus(type, text) {
+      statusEl.className = `status ${type}`;
+      statusEl.textContent = text;
+    }
+
+    function normalizeUrl(input) {
+      const raw = (input || '').trim();
+      if (!raw) return '';
+      return raw.replace(/\/+$/, '');
+    }
+
+    function buildServerCandidates(inputUrl) {
+      const candidates = [];
+      const seen = new Set();
+
+      const add = (u) => {
+        if (!u) return;
+        const n = normalizeUrl(u);
+        if (!n || seen.has(n)) return;
+        seen.add(n);
+        candidates.push(n);
+      };
+
+      const origin = window.location.origin;
+      const explicit = normalizeUrl(inputUrl);
+      add(explicit);
+
+      // On HTTPS pages, plain HTTP localhost usually fails due mixed content.
+      if (window.location.protocol === 'https:' && explicit.startsWith('http://localhost')) {
+        add(origin);
+      }
+
+      // Fallback candidates
+      add(origin);
+      if (window.location.protocol === 'http:') {
+        add('http://localhost:3000');
+      }
+
+      return candidates;
+    }
+
+    async function fetchWithTimeout(url, timeoutMs = 4500) {
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, { method: 'GET', signal: controller.signal });
+      } finally {
+        clearTimeout(t);
+      }
+    }
+
+    function updatePersonaPreview() {
+      const name = personaNameEl.value || 'Alex';
+      const age = ageRangeEl.value || '25-34';
+      const style = responseStyleEl.value || 'Natural';
+      personaPreviewEl.textContent = `“Hi, I'm ${name}, ${age}. I respond in a ${style.toLowerCase()} and conversational way.”`;
+    }
+
+    async function testConnection() {
+      connectBtn.disabled = true;
+      setStatus('note', 'Connecting...');
+
+      const candidates = buildServerCandidates(serverUrlEl.value);
+      let lastError = 'Unknown error';
+
+      const healthPaths = ['/api/health', '/api/lodoclaw/status', '/health', '/api/status'];
+
+      for (const base of candidates) {
+        try {
+          let connected = false;
+          let matchedPath = '';
+
+          for (const path of healthPaths) {
+            const res = await fetchWithTimeout(`${base}${path}`);
+            if (res.ok) {
+              connected = true;
+              matchedPath = path;
+              break;
+            }
+          }
+
+          if (!connected) {
+            lastError = `No known health endpoint responded on ${base}`;
+            continue;
+          }
+
+          serverUrlEl.value = base;
+          setStatus('ok', `Connected to ${base} via ${matchedPath}`);
+          connectBtn.disabled = false;
+          return;
+        } catch (err) {
+          lastError = err && err.message ? err.message : String(err);
+        }
+      }
+
+      const mixedContentHint = window.location.protocol === 'https:' && /localhost/i.test(serverUrlEl.value)
+        ? ' Hint: this page is HTTPS; HTTP localhost is often blocked. Use same-origin backend or HTTP local page.'
+        : '';
+
+      setStatus('err', `Connection failed: ${lastError}. Make sure server is running (node server.js).${mixedContentHint}`);
+      connectBtn.disabled = false;
+    }
+
+    // Default server URL:
+    // - local dev: current origin
+    // - remote/https: current origin (avoid forced localhost mixed-content issues)
+    serverUrlEl.value = window.location.origin || 'http://localhost:3000';
+
+    updatePersonaPreview();
+    personaNameEl.addEventListener('input', updatePersonaPreview);
+    ageRangeEl.addEventListener('change', updatePersonaPreview);
+    responseStyleEl.addEventListener('change', updatePersonaPreview);
+    connectBtn.addEventListener('click', testConnection);
+  </script>
+</body>
+</html>

@@ -1,0 +1,768 @@
+const platformsDB = {
+  "north-america": [
+    {
+      name: "Prolific",
+      region: "USA • UK",
+      rank: "A",
+      category: "surveys",
+      pay: "$12-18/hr",
+      payDetails: "Weekly: $100-400",
+      timeToFirstPay: "Instant",
+      difficulty: "Low",
+      description: "Academic research studies with strong pay rates and fast payouts.",
+      tags: ["Academic", "Research", "PayPal", "Instant"],
+      url: "https://www.prolific.com"
+    },
+    {
+      name: "Upwork",
+      region: "USA • Global",
+      rank: "A",
+      category: "freelance",
+      pay: "$15-100/hr",
+      payDetails: "Monthly: $500-5,000+",
+      timeToFirstPay: "5-14 days",
+      difficulty: "Medium",
+      description: "Global freelance marketplace for writing, coding, design, and VA work.",
+      tags: ["Freelance", "Escrow", "Bank/PayPal"],
+      url: "https://www.upwork.com"
+    }
+  ],
+  "europe": [
+    {
+      name: "Clickworker",
+      region: "Germany • EU",
+      rank: "A",
+      category: "microtasks",
+      pay: "€8-15/hr",
+      payDetails: "Weekly: €100-400",
+      timeToFirstPay: "Weekly",
+      difficulty: "Low",
+      description: "Microtasks, data categorization, and UHRS opportunities across Europe.",
+      tags: ["Microtasks", "EU", "SEPA", "PayPal"],
+      url: "https://www.clickworker.com"
+    }
+  ],
+  "asia": [
+    {
+      name: "Appen",
+      region: "Asia • Global",
+      rank: "A",
+      category: "ai-training",
+      pay: "$5-20/hr",
+      payDetails: "Monthly: $100-1,500",
+      timeToFirstPay: "Monthly",
+      difficulty: "Medium",
+      description: "AI training and data evaluation projects in many Asian markets.",
+      tags: ["AI Training", "Flexible", "Payoneer"],
+      url: "https://www.appen.com"
+    }
+  ],
+  "africa": [
+    {
+      name: "Remotasks",
+      region: "Africa • Global",
+      rank: "A",
+      category: "ai-training",
+      pay: "$2-15/hr",
+      payDetails: "Weekly: $40-300",
+      timeToFirstPay: "3-7 days",
+      difficulty: "Low-Medium",
+      description: "AI data labeling and annotation with regular task volume.",
+      tags: ["AI Training", "PayPal", "Payoneer"],
+      url: "https://www.remotasks.com"
+    }
+  ],
+  "south-america": [
+    {
+      name: "Workana",
+      region: "Brazil • LATAM",
+      rank: "A",
+      category: "freelance",
+      pay: "R$30-150/hr",
+      payDetails: "Monthly: R$1,500-6,000",
+      timeToFirstPay: "Weekly",
+      difficulty: "Medium",
+      description: "Large Latin American freelance platform with strong local demand.",
+      tags: ["Freelance", "LATAM", "PayPal"],
+      url: "https://www.workana.com"
+    }
+  ],
+  "oceania": [
+    {
+      name: "Octopus Group",
+      region: "Australia • NZ",
+      rank: "B",
+      category: "surveys",
+      pay: "A$2-10/survey",
+      payDetails: "Monthly: A$100-400",
+      timeToFirstPay: "Fast",
+      difficulty: "Low",
+      description: "Popular paid surveys platform in Australia and New Zealand.",
+      tags: ["Surveys", "AU/NZ", "Bank"],
+      url: "https://www.octopusgroup.com.au"
+    }
+  ],
+  "global": [
+    {
+      name: "OneForma",
+      region: "Global",
+      rank: "B",
+      category: "data",
+      pay: "$5-20/hr",
+      payDetails: "Monthly: $100-800",
+      timeToFirstPay: "Project based",
+      difficulty: "Low-Medium",
+      description: "Translation, transcription, and AI data work in many languages.",
+      tags: ["Global", "Languages", "PayPal"],
+      url: "https://www.oneforma.com"
+    }
+  ]
+};
+
+const discoveryFeedData = [
+  { name: "New AI Dataset Jobs", region: "Asia", pay: "$35/hr", rank: "A", type: "new", category: "AI Training" },
+  { name: "EU Research Panels", region: "Europe", pay: "€20/study", rank: "A", type: "verified", category: "Surveys" },
+  { name: "Remote Freelance Openings", region: "Global", pay: "$40/hr", rank: "A", type: "high-value", category: "Freelance" }
+];
+// Global Earning Platforms Database
+// Organized by continent, ranked by pay rate and reliability
+
+const platformsDB = {
+  "north-america": [
+    {
+      name: "Scale AI Remotasks",
+      region: "USA",
+      rank: "S",
+      category: "ai-training",
+      pay: "$35-60/hr",
+      payDetails: "Weekly: $400-1000+",
+      timeToFirstPay: "3 days",
+      difficulty: "Medium",
+      description: "Label images for self-driving cars and AI. High pay for quality work. Must pass assessment tests.",
+      tags: ["AI Training", "Image Labeling", "Weekly Pay", "PayPal"],
+      url: "https://www.remotasks.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "UserTesting Pro",
+      region: "USA • Canada",
+      rank: "S",
+      category: "testing",
+      pay: "$60/30min",
+      payDetails: "Weekly: $200-800",
+      timeToFirstPay: "7 days",
+      difficulty: "Low Volume",
+      description: "Test websites for Fortune 500 companies. Screen recording required. Live conversations pay $60+.",
+      tags: ["UX Testing", "Screen Recording", "PayPal", "High Pay"],
+      url: "https://www.usertesting.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Toptal",
+      region: "USA • Elite",
+      rank: "S",
+      category: "freelance",
+      pay: "$60-200/hr",
+      payDetails: "Monthly: $5,000-20,000+",
+      timeToFirstPay: "2-4 weeks",
+      difficulty: "Elite (3% pass)",
+      description: "Elite freelance network. Rigorous screening. Developers, designers, finance. Premium rates.",
+      tags: ["Elite", "Developers", "Long-term", "Premium"],
+      url: "https://www.toptal.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Prolific",
+      region: "USA • UK",
+      rank: "A",
+      category: "surveys",
+      pay: "$12-18/hr",
+      payDetails: "Weekly: $100-400",
+      timeToFirstPay: "Instant",
+      difficulty: "Low",
+      description: "Academic research studies. Higher pay than typical surveys. Must maintain 100% attention accuracy.",
+      tags: ["Academic", "Research", "PayPal", "Instant"],
+      url: "https://www.prolific.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Amazon MTurk",
+      region: "USA • 24/7",
+      rank: "A",
+      category: "microtasks",
+      pay: "$8-25/hr",
+      payDetails: "Weekly: $100-600",
+      timeToFirstPay: "24-48h approval",
+      difficulty: "Low",
+      description: "The original microtask platform. Thousands of HITs. Use scripts/turker tools for efficiency.",
+      tags: ["Microtasks", "Data Entry", "24/7", "Amazon Pay"],
+      url: "https://www.mturk.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Upwork",
+      region: "USA • Global",
+      rank: "A",
+      category: "freelance",
+      pay: "$15-100/hr",
+      payDetails: "Monthly: $500-5,000+",
+      timeToFirstPay: "5-14 days",
+      difficulty: "Medium Competition",
+      description: "World's largest freelance marketplace. Use Kimmy AI for proposals 5x faster.",
+      tags: ["Freelance", "All Skills", "Bank/PayPal", "Escrow"],
+      url: "https://www.upwork.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Fiverr",
+      region: "USA • Gig Economy",
+      rank: "B",
+      category: "freelance",
+      pay: "$5-500/gig",
+      payDetails: "Monthly: $200-2,000",
+      timeToFirstPay: "14 days clearing",
+      difficulty: "Low Start",
+      description: "Sell services starting at $5. Great for AI-assisted writing, design, data entry.",
+      tags: ["Gigs", "Creative", "Scaleable", "PayPal"],
+      url: "https://www.fiverr.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Respondent.io",
+      region: "USA • Research",
+      rank: "B",
+      category: "surveys",
+      pay: "$50-250/study",
+      payDetails: "Monthly: $100-1,000",
+      timeToFirstPay: "5-7 days",
+      difficulty: "Medium Qualify",
+      description: "B2B research interviews. Professional participants. High payouts for niche expertise.",
+      tags: ["Interviews", "B2B", "Professional", "PayPal"],
+      url: "https://www.respondent.io",
+      verified: true,
+      active: true
+    }
+  ],
+  
+  "europe": [
+    {
+      name: "Testable Minds",
+      region: "UK • EU",
+      rank: "S",
+      category: "surveys",
+      pay: "€8-25/study",
+      payDetails: "Weekly: €80-300",
+      timeToFirstPay: "48h",
+      difficulty: "Low",
+      description: "Behavioral science studies from top universities. Psychology and decision-making research.",
+      tags: ["Academic", "Behavioral", "Revolut", "PayPal"],
+      url: "https://testable.org",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Clickworker",
+      region: "Germany • 30+ Countries",
+      rank: "A",
+      category: "microtasks",
+      pay: "€8-15/hr",
+      payDetails: "Weekly: €100-400",
+      timeToFirstPay: "Weekly",
+      difficulty: "Low",
+      description: "German microtask platform. Text creation, AI training data. UHRS partner.",
+      tags: ["Microtasks", "AI Data", "UHRS", "SEPA"],
+      url: "https://www.clickworker.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "DataForce by TransPerfect",
+      region: "Europe • AI Data",
+      rank: "A",
+      category: "ai-training",
+      pay: "€15-35/hr",
+      payDetails: "Project: €200-800",
+      timeToFirstPay: "15 days",
+      difficulty: "Project Based",
+      description: "AI training data for European markets. Audio, image, text validation. Multi-language.",
+      tags: ["AI Training", "Languages", "Audio", "TransPerfect"],
+      url: "https://www.dataforce.ai",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Intellizoom",
+      region: "UK • EU",
+      rank: "B",
+      category: "testing",
+      pay: "£8-12/test",
+      payDetails: "Monthly: £50-200",
+      timeToFirstPay: "21 days",
+      difficulty: "Medium Volume",
+      description: "WhatUsersDo successor. Card sorting, tree testing. PayPal only. UK/EU focus.",
+      tags: ["UX Testing", "Card Sort", "PayPal", "UK/EU"],
+      url: "https://www.intellizoom.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Malt.fr",
+      region: "France",
+      rank: "B",
+      category: "freelance",
+      pay: "€40-120/hr",
+      payDetails: "Monthly: €500-3,000",
+      timeToFirstPay: "10 days",
+      difficulty: "Medium Competition",
+      description: "France's largest freelance platform. Strong in French market. Direct relationships.",
+      tags: ["Freelance", "French", "Tech", "SEPA"],
+      url: "https://www.malt.fr",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Curious Cat",
+      region: "UK • Mobile",
+      rank: "C",
+      category: "surveys",
+      pay: "£2-8/hr",
+      payDetails: "Monthly: £20-100",
+      timeToFirstPay: "Instant from £1",
+      difficulty: "Very Low",
+      description: "Mobile survey app. Location-based. Instant PayPal. UK focused.",
+      tags: ["Mobile", "Surveys", "Instant", "PayPal"],
+      url: "https://www.curiouscatapp.com",
+      verified: true,
+      active: true
+    }
+  ],
+  
+  "asia": [
+    {
+      name: "Truelancer",
+      region: "India • Asia Pacific",
+      rank: "A",
+      category: "freelance",
+      pay: "₹200-800/hr",
+      payDetails: "Monthly: ₹10,000-40,000",
+      timeToFirstPay: "3-5 days",
+      difficulty: "Low",
+      description: "India-based freelance marketplace. IT, writing, data entry. Lower rates but high volume.",
+      tags: ["Freelance", "India", "IT", "PayTM"],
+      url: "https://www.truelancer.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Microworkers",
+      region: "Indonesia • Global",
+      rank: "A",
+      category: "microtasks",
+      pay: "$4-10/hr",
+      payDetails: "Weekly: $30-150",
+      timeToFirstPay: "$9 min payout",
+      difficulty: "Low",
+      description: "Microtask platform popular in Asia. Data collection, social tasks. Skrill/Local bank.",
+      tags: ["Microtasks", "Global", "Low Payout", "Skrill"],
+      url: "https://www.microworkers.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Sama (Samasource)",
+      region: "Kenya • Uganda • India",
+      rank: "B",
+      category: "ai-training",
+      pay: "$5-12/hr",
+      payDetails: "Monthly: $200-500",
+      timeToFirstPay: "Monthly",
+      difficulty: "Training Required",
+      description: "Impact sourcing platform. AI training with social mission. Fair wage certified.",
+      tags: ["Social Impact", "AI Data", "Training", "Fair Wage"],
+      url: "https://www.sama.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Guru.com",
+      region: "India • Philippines",
+      rank: "B",
+      category: "freelance",
+      pay: "$8-40/hr",
+      payDetails: "Monthly: $300-1,500",
+      timeToFirstPay: "SafePay",
+      difficulty: "Medium Competition",
+      description: "Established freelance platform. Programming, design, admin. SafePay protection.",
+      tags: ["Freelance", "Tech", "SafePay", "PayPal"],
+      url: "https://www.guru.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Rakuten Insight",
+      region: "Japan • Asia",
+      rank: "B",
+      category: "surveys",
+      pay: "¥100-500/survey",
+      payDetails: "Monthly: ¥3,000-15,000",
+      timeToFirstPay: "Low Threshold",
+      difficulty: "Japanese Focus",
+      description: "Japanese survey company with Asian focus. Product testing. eGift cards and PayPal.",
+      tags: ["Surveys", "Japan", "Points", "Gift Cards"],
+      url: "https://insight.rakuten.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Spare5 (Mighty AI)",
+      region: "Philippines • Global",
+      rank: "C",
+      category: "microtasks",
+      pay: "$0.10-0.50/task",
+      payDetails: "Weekly: $10-50",
+      timeToFirstPay: "Weekly",
+      difficulty: "Very Low",
+      description: "Quick microtasks on mobile. Image tagging, categorization. 5-minute tasks.",
+      tags: ["Microtasks", "Mobile", "Quick", "PayPal"],
+      url: "https://mighty.ai",
+      verified: true,
+      active: true
+    }
+  ],
+  
+  "africa": [
+    {
+      name: "Andela Talent Cloud",
+      region: "Nigeria • Kenya • Ghana",
+      rank: "S",
+      category: "freelance",
+      pay: "$25-150/hr",
+      payDetails: "Monthly: $3,000-15,000",
+      timeToFirstPay: "2-4 weeks placement",
+      difficulty: "Elite",
+      description: "Elite African tech talent network. Contracts with Google, Microsoft, IBM.",
+      tags: ["Elite", "Developers", "Long-term", "Africa Tech"],
+      url: "https://www.andela.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Lynks (Jumia)",
+      region: "Nigeria • Francophone",
+      rank: "A",
+      category: "microtasks",
+      pay: "₦1,500-4,000/day",
+      payDetails: "Monthly: ₦30,000-100,000",
+      timeToFirstPay: "Weekly",
+      difficulty: "Low",
+      description: "Jumia's data platform. Delivery verification, quality checks. Mobile-first. French/English.",
+      tags: ["Jumia", "Nigeria", "Mobile", "Bank"],
+      url: "https://www.lynks.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "CloudFactory Kenya",
+      region: "Kenya • Nepal",
+      rank: "A",
+      category: "ai-training",
+      pay: "$4-8/hr",
+      payDetails: "Monthly: $300-600",
+      timeToFirstPay: "Monthly Salary",
+      difficulty: "Office Based",
+      description: "Data processing workforce. Nairobi-based. Team structure. Career path to leadership.",
+      tags: ["Kenya", "Team", "Career", "Office"],
+      url: "https://www.cloudfactory.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Golance Africa",
+      region: "South Africa • Nigeria",
+      rank: "B",
+      category: "freelance",
+      pay: "$5-35/hr",
+      payDetails: "Monthly: $200-1,000",
+      timeToFirstPay: "No Fees",
+      difficulty: "Medium Competition",
+      description: "Africa-focused freelance platform. No fees for freelancers. Escrow protection.",
+      tags: ["No Fees", "Africa", "Escrow", "Growing"],
+      url: "https://www.golance.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Hive Micro",
+      region: "South Africa • Global",
+      rank: "B",
+      category: "microtasks",
+      pay: "$0.05-0.50/task",
+      payDetails: "Weekly: $20-100",
+      timeToFirstPay: "$10 min Bitcoin",
+      difficulty: "Very Low",
+      description: "Simple microtasks worldwide. Image categorization. Bitcoin or PayPal payout.",
+      tags: ["Microtasks", "Bitcoin", "Global", "Easy"],
+      url: "https://hivemicro.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "GeoPoll",
+      region: "Kenya • Nigeria • Ghana",
+      rank: "B",
+      category: "surveys",
+      pay: "$0.50-3/survey",
+      payDetails: "Monthly: $30-150",
+      timeToFirstPay: "Airtime or Cash",
+      difficulty: "Mobile First",
+      description: "Mobile surveys for African markets. Airtime or mobile money payout. MPesa.",
+      tags: ["Mobile", "Africa", "Airtime", "MPesa"],
+      url: "https://www.geopoll.com",
+      verified: true,
+      active: true
+    }
+  ],
+  
+  "south-america": [
+    {
+      name: "Workana",
+      region: "Brazil • Latin America",
+      rank: "A",
+      category: "freelance",
+      pay: "R$30-150/hr",
+      payDetails: "Monthly: R$1,500-6,000",
+      timeToFirstPay: "Weekly",
+      difficulty: "High Volume",
+      description: "Latin America's largest freelance platform. Strong in Brazil, Argentina, Mexico.",
+      tags: ["Latin America", "Brazil", "Tech", "PayPal"],
+      url: "https://www.workana.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Appen Brazil",
+      region: "Brazil • Remote",
+      rank: "A",
+      category: "ai-training",
+      pay: "R$15-40/hr",
+      payDetails: "Monthly: R$800-3,000",
+      timeToFirstPay: "Monthly",
+      difficulty: "Portuguese Required",
+      description: "AI training data for Brazilian Portuguese. Search evaluation, transcription.",
+      tags: ["AI Data", "Appen", "Brazil", "PayPal"],
+      url: "https://appen.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Crowd Brasil",
+      region: "Brazil • Freelance",
+      rank: "B",
+      category: "freelance",
+      pay: "R$20-80/hr",
+      payDetails: "Monthly: R$500-2,500",
+      timeToFirstPay: "PIX Payment",
+      difficulty: "Low",
+      description: "Brazilian freelance community. Content writing, translation. PIX/boleto payment.",
+      tags: ["Brazilian", "PIX", "Creative", "Local"],
+      url: "https://www.crowd.br",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Opinion World Brazil",
+      region: "Brazil • Surveys",
+      rank: "C",
+      category: "surveys",
+      pay: "R$2-8/survey",
+      payDetails: "Monthly: R$50-300",
+      timeToFirstPay: "R$50 min",
+      difficulty: "Low",
+      description: "Brazilian consumer panel. Product testing. Low disqualification rate.",
+      tags: ["Surveys", "Brazil", "Gift Cards", "PayPal"],
+      url: "https://opinionworld.com/br",
+      verified: true,
+      active: true
+    }
+  ],
+  
+  "oceania": [
+    {
+      name: "UserTesting Australia",
+      region: "Australia • NZ • Pacific",
+      rank: "S",
+      category: "testing",
+      pay: "$60-80 AUD/test",
+      payDetails: "Weekly: $200-600 AUD",
+      timeToFirstPay: "7 days",
+      difficulty: "Medium Volume",
+      description: "Aussie-focused user testing. Strong demand for regional testers. $60 AUD common.",
+      tags: ["UX Testing", "Australia", "High Pay", "PayPal"],
+      url: "https://www.usertesting.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Freelancer.com.au",
+      region: "Australia • Local",
+      rank: "A",
+      category: "freelance",
+      pay: "$40-120 AUD/hr",
+      payDetails: "Monthly: $1,000-5,000 AUD",
+      timeToFirstPay: "Milestone",
+      difficulty: "Medium Competition",
+      description: "Australian freelance marketplace. Local clients prefer local talent. Escrow.",
+      tags: ["Australian", "Local", "Escrow", "Bank"],
+      url: "https://www.freelancer.com.au",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Pureprofile",
+      region: "Australia • NZ",
+      rank: "B",
+      category: "surveys",
+      pay: "$1-5 AUD/survey",
+      payDetails: "Monthly: $50-200 AUD",
+      timeToFirstPay: "$25 min Bank",
+      difficulty: "Low",
+      description: "Aussie survey panel since 2000. Reliable. Ad and product testing. Transparent.",
+      tags: ["Surveys", "Australia", "Bank", "Reliable"],
+      url: "https://www.pureprofile.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Octopus Group",
+      region: "Australia • High Pay",
+      rank: "B",
+      category: "surveys",
+      pay: "$24-48 AUD/hr",
+      payDetails: "Monthly: $100-400 AUD",
+      timeToFirstPay: "$20 min Bank",
+      difficulty: "High Claim",
+      description: "Claims Australia's highest paying surveys. $4-8 per 10 min typical. Referral bonuses.",
+      tags: ["High Pay", "Australia", "Fast", "App"],
+      url: "https://www.octopusgroup.com.au",
+      verified: true,
+      active: true
+    }
+  ],
+  
+  "global": [
+    {
+      name: "Data Annotation Tech (TELUS)",
+      region: "Global • AI Data",
+      rank: "S",
+      category: "ai-training",
+      pay: "$15-45/hr",
+      payDetails: "Monthly: $500-2,500",
+      timeToFirstPay: "Monthly",
+      difficulty: "Tests Required",
+      description: "Lionbridge successor. Global AI training data. Major tech clients. Long-term.",
+      tags: ["Global", "AI Data", "TELUS", "PayPal"],
+      url: "https://ai.datannotation.tech",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Appen (all projects)",
+      region: "Global • AI Training",
+      rank: "A",
+      category: "ai-training",
+      pay: "$3-25/hr",
+      payDetails: "Monthly: $100-1,500",
+      timeToFirstPay: "Monthly",
+      difficulty: "Variable Work",
+      description: "The giant of AI training. 100+ countries. Search evaluation, transcription.",
+      tags: ["Global", "AI", "Languages", "PayPal"],
+      url: "https://appen.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "PeoplePerHour",
+      region: "Global • UK Founded",
+      rank: "A",
+      category: "freelance",
+      pay: "$10-80/hr",
+      payDetails: "Monthly: $300-3,000",
+      timeToFirstPay: "Escrow",
+      difficulty: "Medium Competition",
+      description: "Hourlies and projects. Strong in design, development. Hourlie system for packaged services.",
+      tags: ["Global", "Hourlies", "Design", "PayPal"],
+      url: "https://www.peopleperhour.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "OneForma (Pactera EDGE)",
+      region: "Global • AI Data",
+      rank: "B",
+      category: "data",
+      pay: "$5-20/hr",
+      payDetails: "Monthly: $100-800",
+      timeToFirstPay: "Project Based",
+      difficulty: "Languages 150+",
+      description: "Translation, transcription, AI training. 150+ languages. Low barrier. Good for multilingual.",
+      tags: ["Translation", "Global", "Languages", "PayPal"],
+      url: "https://www.oneforma.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Pollfish",
+      region: "Global • Mobile",
+      rank: "B",
+      category: "surveys",
+      pay: "$0.30-2/survey",
+      payDetails: "Monthly: $20-150",
+      timeToFirstPay: "$10 min PayPal",
+      difficulty: "Mobile Only",
+      description: "Mobile survey SDK in 1000+ apps. Quick polls. Good for developing countries.",
+      tags: ["Mobile", "Global", "Quick", "PayPal"],
+      url: "https://www.pollfish.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "SproutGigs (Picoworkers)",
+      region: "Global • Microtasks",
+      rank: "C",
+      category: "microtasks",
+      pay: "$0.02-0.50/task",
+      payDetails: "Weekly: $10-80",
+      timeToFirstPay: "$5 min",
+      difficulty: "Very Low",
+      description: "Simple online tasks globally. Signups, social follows. Crypto and PayPal.",
+      tags: ["Microtasks", "Global", "Crypto", "Instant"],
+      url: "https://sproutgigs.com",
+      verified: true,
+      active: true
+    }
+  ]
+};
+
+// AI Discovery Feed Data
+const discoveryFeedData = [
+  { name: "DataAnnotation Tech", region: "Global", pay: "$45/hr", rank: "S", type: "new", category: "AI Training" },
+  { name: "Testable Minds EU", region: "Europe", pay: "€25/study", rank: "S", type: "verified", category: "Academic" },
+  { name: "Truelancer Pro", region: "India", pay: "₹800/hr", rank: "A", type: "high-value", category: "Freelance" },
+  { name: "CloudFactory Kenya", region: "Africa", pay: "$8/hr", rank: "A", type: "verified", category: "AI Data" },
+  { name: "Octopus Group AU", region: "Oceania", pay: "$48/hr", rank: "A", type: "new", category: "Surveys" },
+  { name: "Andela Talent", region: "Nigeria", pay: "$150/hr", rank: "S", type: "high-value", category: "Elite" },
+  { name: "Workana LatAm", region: "Brazil", pay: "R$150/hr", rank: "A", type: "verified", category: "Freelance" },
+  { name: "Hive Micro Global", region: "Global", pay: "$0.50/task", rank: "C", type: "new", category: "Microtasks" },
+];
+
+// Export for use in main script
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { platformsDB, discoveryFeedData };
+}
