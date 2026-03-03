@@ -202,13 +202,22 @@
     }
 
     .toggle-mode {
-      display: block;
-      margin-top: 12px;
-      font-size: 13px;
+      display: inline-block;
+      margin: 16px 0;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
       color: var(--primary);
+      background: #eff6ff;
+      border: 2px solid var(--primary);
+      border-radius: 999px;
       cursor: pointer;
-      text-decoration: underline;
       text-align: center;
+      transition: all 0.2s;
+    }
+    .toggle-mode:hover {
+      background: var(--primary);
+      color: white;
     }
 
     .warning-box {
@@ -230,6 +239,10 @@
     <section class="card">
       <p class="card-title">Connect to Claude AI</p>
       <div id="status" class="status note">Ready to connect.</div>
+
+      <div class="info-box" id="modeInfo" style="margin:12px 0; padding:12px; background:#f0f9ff; border:1px solid #0ea5e9; border-radius:8px; font-size:13px; color:#0369a1;">
+        💡 <strong>Server Mode:</strong> Enter a backend server URL below, or click the 🔑 button below to use your own Claude API key without a server.
+      </div>
 
       <div class="grid">
         <div class="field">
@@ -299,7 +312,7 @@
         <button id="saveApiKeyBtn" type="button" style="width:100%">Save & Connect</button>
       </div>
 
-      <span class="toggle-mode" id="toggleMode">Switch to client-side mode (no server needed)</span>
+      <button class="toggle-mode" id="toggleMode" type="button">🔑 Use Your Own API Key (No Server)</button>
     </section>
 
     <div class="links">
@@ -438,6 +451,8 @@
     const toggleMode = document.getElementById('toggleMode');
     const apiKeyInput = document.getElementById('apiKeyInput');
     const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+    const modeInfo = document.getElementById('modeInfo');
+    const serverUrlField = document.getElementById('serverUrl');
     let isClientMode = false;
 
     toggleMode.addEventListener('click', () => {
@@ -445,13 +460,26 @@
       if (isClientMode) {
         clientModeSection.classList.add('visible');
         serverModeFoot.textContent = 'Client-side mode: API calls go directly to Anthropic from your browser.';
-        toggleMode.textContent = 'Switch to server mode';
-        connectBtn.textContent = 'Test API Key & Connect';
+        toggleMode.textContent = '🔌 Switch to Server Mode';
+        connectBtn.textContent = 'Launch Kimmy →';
+        modeInfo.innerHTML = '🔑 <strong>Client Mode:</strong> Your API key is used directly in the browser. Key is never sent to any server.';
+        modeInfo.style.background = '#fefce8';
+        modeInfo.style.borderColor = '#eab308';
+        modeInfo.style.color = '#854d0e';
+        serverUrlField.disabled = true;
+        serverUrlField.style.opacity = '0.5';
+        apiKeyInput.focus();
       } else {
         clientModeSection.classList.remove('visible');
         serverModeFoot.textContent = 'Claude API key is stored securely on the server (`.env`). No keys are exposed to the browser.';
-        toggleMode.textContent = 'Switch to client-side mode (no server needed)';
+        toggleMode.textContent = '🔑 Use Your Own API Key (No Server)';
         connectBtn.textContent = 'Connect & Start Earning';
+        modeInfo.innerHTML = '💡 <strong>Server Mode:</strong> Enter a backend server URL below, or click the 🔑 button to use your own Claude API key without a server.';
+        modeInfo.style.background = '#f0f9ff';
+        modeInfo.style.borderColor = '#0ea5e9';
+        modeInfo.style.color = '#0369a1';
+        serverUrlField.disabled = false;
+        serverUrlField.style.opacity = '1';
       }
     });
 
