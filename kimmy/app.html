@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kimmy &mdash; AI Survey Assistant (Claude-Powered)</title>
+<style>
+:root {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --success: #16a34a;
+  --warning: #ca8a04;
+  --danger: #dc2626;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --radius: 0.5rem;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 1rem; }
+
+/* Header */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow);
+}
+header .inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+header h1 { font-size: 1.25rem; font-weight: 700; }
+header h1 .beta { font-size: 0.6em; color: var(--primary); font-weight: 500; vertical-align: super; }
+.header-stats { display: flex; gap: 1rem; font-size: 0.85rem; }
+.header-stats .stat { display: flex; align-items: center; gap: 0.25rem; }
+.header-stats .stat-val { font-weight: 700; }
+.stat-earned { color: var(--success); }
+.stat-tasks { color: var(--primary); }
+.stat-rate { color: var(--warning); }
+
+/* Panels */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+}
+.panel-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+/* Forms */
+label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; }
+input, select, textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color 0.15s;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+textarea { resize: vertical; min-height: 100px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border: none; border-radius: var(--radius);
+  font-size: 0.85rem; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: all 0.15s;
+  text-decoration: none;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #15803d; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #b91c1c; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.btn-outline:hover { background: var(--bg); }
+.btn-sm { padding: 0.35rem 0.7rem; font-size: 0.8rem; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* API Key Section */
+.key-row { display: flex; gap: 0.5rem; }
+.key-row input { flex: 1; }
+.key-status { font-size: 0.8rem; margin-top: 0.35rem; }
+.key-status.ok { color: var(--success); }
+.key-status.err { color: var(--danger); }
+.key-status.pending { color: var(--warning); }
+
+/* Config Grid */
+.config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem; }
+
+/* Tabs */
+.tabs { display: flex; gap: 0.25rem; border-bottom: 2px solid var(--border); margin-bottom: 1rem; }
+.tab {
+  padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 500;
+  background: none; border: none; cursor: pointer; color: var(--text-muted);
+  border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s;
+}
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab:hover { color: var(--text); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Survey Workspace */
+.workspace { display: grid; gap: 1rem; }
+@media (min-width: 640px) { .workspace { grid-template-columns: 1fr 1fr; } }
+.response-box {
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  min-height: 120px;
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  position: relative;
+}
+.response-box.streaming { border-color: var(--primary); }
+.response-box .cursor { display: inline-block; width: 2px; height: 1em; background: var(--primary); animation: blink 0.8s infinite; vertical-align: text-bottom; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* Action Buttons */
+.actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+
+/* Earnings Table */
+.earnings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; }
+.earn-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  text-align: center;
+}
+.earn-card .val { font-size: 1.4rem; font-weight: 700; }
+.earn-card .lbl { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+.earn-card.highlight { border-color: var(--success); background: #f0fdf4; }
+
+/* History Table */
+.history-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.history-table th, .history-table td { padding: 0.4rem 0.5rem; text-align: left; border-bottom: 1px solid var(--border); }
+.history-table th { font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 0.7rem; }
+.history-table tr:hover { background: var(--bg); }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999;
+  background: var(--text); color: #fff;
+  padding: 0.6rem 1.2rem; border-radius: var(--radius);
+  font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(100px); opacity: 0;
+  transition: all 0.3s;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* Spinner */
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Persona */
+.persona-preview {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 0.5rem 0.75rem;
+  font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;
+}
+
+/* Hidden */
+.hidden { display: none !important; }
+
+/* Screen: Setup */
+#screen-setup { max-width: 500px; margin: 2rem auto; }
+#screen-setup .logo { text-align: center; margin-bottom: 1.5rem; }
+#screen-setup .logo h2 { font-size: 2rem; }
+#screen-setup .logo p { color: var(--text-muted); }
+
+/* Responsive */
+@media (max-width: 639px) {
+  .config-grid { grid-template-columns: 1fr; }
+  .header-stats { font-size: 0.75rem; }
+  header h1 { font-size: 1.1rem; }
+}
+
+/* Kbd shortcuts hint */
+.kbd { display: inline-block; background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 0 0.3rem; font-size: 0.7rem; font-family: monospace; color: var(--text-muted); }
+.shortcuts { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; }
+
+/* Confidence */
+.confidence { font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 99px; font-weight: 600; }
+.confidence.high { background: #dcfce7; color: #166534; }
+.confidence.medium { background: #fef9c3; color: #854d0e; }
+.confidence.low { background: #fee2e2; color: #991b1b; }
+
+/* Security note */
+.security-note { font-size: 0.75rem; color: var(--text-muted); background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius); padding: 0.5rem 0.75rem; margin-top: 0.75rem; }
+</style>
+</head>
+<body>
+
+<!-- ===== SETUP SCREEN ===== -->
+<div id="screen-setup">
+  <div class="logo">
+    <h2>Kimmy <span style="color:var(--primary);font-size:0.5em;vertical-align:super;">beta</span></h2>
+    <p>AI-powered survey assistant &mdash; powered by Claude</p>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Connect to Claude AI</div>
+    <div class="key-status hidden" id="keyStatus"></div>
+
+    <div class="config-grid">
+      <div>
+        <label for="modelSelect">Model</label>
+        <select id="modelSelect">
+          <option value="claude-sonnet-4-20250514">Claude Sonnet 4 (Fast)</option>
+          <option value="claude-opus-4-20250514">Claude Opus 4 (Best)</option>
+          <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (Cheap)</option>
+        </select>
+      </div>
+      <div>
+        <label for="serverUrl">Server URL</label>
+        <input type="text" id="serverUrl" value="" placeholder="http://localhost:3000">
+        <small style="color:var(--text-muted);font-size:0.75rem">Auto-detected. Change if using a different server.</small>
+      </div>
+    </div>
+
+    <div style="margin-top:1rem;">
+      <label for="personaName">Persona Name</label>
+      <input type="text" id="personaName" placeholder="Alex" value="Alex">
+    </div>
+    <div class="config-grid">
+      <div>
+        <label for="personaAge">Age Range</label>
+        <select id="personaAge">
+          <option value="25-34">25-34</option>
+          <option value="18-24">18-24</option>
+          <option value="35-44">35-44</option>
+          <option value="45-54">45-54</option>
+          <option value="55+">55+</option>
+        </select>
+      </div>
+      <div>
+        <label for="personaStyle">Response Style</label>
+        <select id="personaStyle">
+          <option value="natural and conversational">Natural</option>
+          <option value="detailed and thoughtful">Detailed</option>
+          <option value="brief and direct">Brief</option>
+        </select>
+      </div>
+    </div>
+    <div class="persona-preview" id="personaPreview"></div>
+
+    <button class="btn btn-primary" id="connectBtn" style="width:100%;margin-top:1rem;justify-content:center;">
+      Connect &amp; Start Earning
+    </button>
+    <div class="security-note" id="securityNote">
+      Claude API key is stored securely on the server (.env). No keys are exposed to the browser.
+    </div>
+    <!-- Client-side mode section (hidden by default) -->
+    <div id="clientModeSection" style="display:none;margin-top:1rem;padding:1rem;background:#fefce8;border:1px solid #fbbf24;border-radius:var(--radius);">
+      <div style="font-size:0.8rem;font-weight:600;color:#92400e;margin-bottom:0.5rem;">Direct API Mode (No Server)</div>
+      <div style="font-size:0.75rem;color:#78350f;margin-bottom:0.5rem;">Your API key is stored only in browser memory (not localStorage). Enter your Anthropic API key:</div>
+      <div class="key-row">
+        <input type="password" id="clientApiKey" placeholder="sk-ant-api03-..." style="font-family:monospace;">
+        <button class="btn btn-primary btn-sm" id="saveClientKeyBtn">Save</button>
+      </div>
+    </div>
+    <button type="button" class="btn btn-outline btn-sm" id="toggleClientModeBtn" style="margin-top:0.75rem;width:100%;">
+      🔑 Switch to client-side mode (no server needed)
+    </button>
+  </div>
+</div>
+
+<!-- ===== MAIN APP SCREEN ===== -->
+<div id="screen-app" class="hidden">
+  <header>
+    <div class="inner">
+      <h1>Kimmy <span class="beta">beta</span></h1>
+      <div class="header-stats">
+        <div class="stat"><span class="stat-val stat-earned" id="headerEarned">$0.00</span><span>earned</span></div>
+        <div class="stat"><span class="stat-val stat-tasks" id="headerTasks">0</span><span>tasks</span></div>
+        <div class="stat"><span class="stat-val stat-rate" id="headerRate">$0/hr</span><span>rate</span></div>
+        <button class="btn btn-outline btn-sm" id="settingsBtn">Settings</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="survey">Survey Assistant</button>
+      <button class="tab" data-tab="micro">Microtasks</button>
+      <button class="tab" data-tab="earnings">Earnings</button>
+      <a href="earn.html" class="tab" style="text-decoration:none;color:var(--success);font-weight:700;border:1px solid var(--success);" target="_blank" rel="noopener">Find Work $</a>
+    </div>
+
+    <!-- ===== TAB: Survey Assistant ===== -->
+    <div class="tab-content active" id="tab-survey">
+      <div class="workspace">
+        <div>
+          <div class="panel">
+            <div class="panel-title">Question Input</div>
+            <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+              <select id="questionType" style="width:auto;">
+                <option value="multiple_choice">Multiple Choice</option>
+                <option value="likert">Likert Scale</option>
+                <option value="open_ended">Open-Ended</option>
+                <option value="ranking">Ranking</option>
+                <option value="grid">Grid/Matrix</option>
+              </select>
+              <select id="platformSelect" style="width:auto;">
+                <option value="general">General</option>
+                <option value="prolific">Prolific</option>
+                <option value="toloka">Toloka</option>
+                <option value="mturk">MTurk</option>
+              </select>
+            </div>
+            <textarea id="questionInput" placeholder="Paste the survey question here... &#10;&#10;Include answer options if multiple choice.&#10;&#10;You can also paste JSON from the bookmarklet." rows="6"></textarea>
+            <div class="actions">
+              <button class="btn btn-primary" id="generateBtn">Generate Answer</button>
+              <button class="btn btn-outline btn-sm" id="clearQBtn">Clear</button>
+            </div>
+            <div class="shortcuts">
+              <span class="kbd">Ctrl+Enter</span> Generate &nbsp;
+              <span class="kbd">Ctrl+Shift+C</span> Copy response &nbsp;
+              <span class="kbd">Ctrl+R</span> Regenerate
+            </div>
+          </div>
+
+          <!-- Context / History -->
+          <div class="panel">
+            <div class="panel-title">Survey Context (<span id="contextCount">0</span> Q&amp;A pairs)</div>
+            <div id="contextList" style="max-height:150px;overflow-y:auto;font-size:0.8rem;color:var(--text-muted);">
+              <em>Previous Q&amp;A from this survey session will appear here for consistency.</em>
+            </div>
+            <div class="actions" style="margin-top:0.5rem;">
+              <button class="btn btn-outline btn-sm" id="clearContextBtn">Clear Context</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="panel">
+            <div class="panel-title">
+              AI Response
+              <span class="confidence hidden" id="confidenceBadge"></span>
+            </div>
+            <div class="response-box" id="responseBox">
+              <em style="color:var(--text-muted);">Response will appear here...</em>
+            </div>
+            <div id="tokenInfo" class="hidden" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.35rem;"></div>
+            <div class="actions">
+              <button class="btn btn-success btn-sm" id="approveBtn" disabled>Approve &amp; Log</button>
+              <button class="btn btn-outline btn-sm" id="copyBtn" disabled>Copy</button>
+              <button class="btn btn-outline btn-sm" id="regenBtn" disabled>Regenerate</button>
+              <button class="btn btn-outline btn-sm" id="editBtn" disabled>Edit</button>
+            </div>
+          </div>
+
+          <!-- Quick Earn Log -->
+          <div class="panel">
+            <div class="panel-title">Log Earnings</div>
+            <div class="config-grid">
+              <div>
+                <label for="earnAmount">Amount ($)</label>
+                <input type="number" id="earnAmount" step="0.01" min="0" placeholder="0.50" value="">
+              </div>
+              <div>
+                <label for="earnPlatform">Platform</label>
+                <select id="earnPlatform">
+                  <option value="prolific">Prolific</option>
+                  <option value="toloka">Toloka</option>
+                  <option value="mturk">MTurk</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-success btn-sm" id="logEarnBtn" style="margin-top:0.5rem;">Log Earning</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: Microtasks ===== -->
+    <div class="tab-content" id="tab-micro">
+      <div class="workspace">
+        <div>
+          <div class="panel">
+            <div class="panel-title">Task Input</div>
+            <select id="microTaskType" style="margin-bottom:0.5rem;">
+              <option value="data_entry">Data Entry / Form Completion</option>
+              <option value="content_moderation">Content Moderation</option>
+              <option value="writing">Writing / Content Creation</option>
+              <option value="translation">Translation</option>
+              <option value="coding">Code Generation / Debugging</option>
+              <option value="general">General Task</option>
+            </select>
+            <textarea id="microInput" placeholder="Describe the task or paste the content to process..." rows="8"></textarea>
+            <div class="actions">
+              <button class="btn btn-primary" id="microGenBtn">Process Task</button>
+              <button class="btn btn-outline btn-sm" id="microClearBtn">Clear</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <div class="panel-title">AI Output</div>
+            <div class="response-box" id="microResponseBox">
+              <em style="color:var(--text-muted);">Output will appear here...</em>
+            </div>
+            <div id="microTokenInfo" class="hidden" style="font-size:0.75rem;color:var(--text-muted);margin-top:0.35rem;"></div>
+            <div class="actions">
+              <button class="btn btn-outline btn-sm" id="microCopyBtn" disabled>Copy</button>
+              <button class="btn btn-outline btn-sm" id="microRegenBtn" disabled>Regenerate</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: Earnings ===== -->
+    <div class="tab-content" id="tab-earnings">
+      <div class="earnings-grid">
+        <div class="earn-card highlight">
+          <div class="val" id="earnToday">$0.00</div>
+          <div class="lbl">Today</div>
+        </div>
+        <div class="earn-card">
+          <div class="val" id="earnWeek">$0.00</div>
+          <div class="lbl">This Week</div>
+        </div>
+        <div class="earn-card">
+          <div class="val" id="earnMonth">$0.00</div>
+          <div class="lbl">This Month</div>
+        </div>
+        <div class="earn-card">
+          <div class="val" id="earnTotal">$0.00</div>
+          <div class="lbl">All Time</div>
+        </div>
+        <div class="earn-card">
+          <div class="val" id="earnAvgRate">$0/hr</div>
+          <div class="lbl">Avg Hourly</div>
+        </div>
+        <div class="earn-card">
+          <div class="val" id="earnTaskCount">0</div>
+          <div class="lbl">Total Tasks</div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:1rem;">
+        <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center;">
+          Task History
+          <button class="btn btn-outline btn-sm" id="exportCsvBtn">Export CSV</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="history-table">
+            <thead>
+              <tr><th>Date</th><th>Platform</th><th>Type</th><th>Amount</th><th>Time</th><th>Rate</th></tr>
+            </thead>
+            <tbody id="historyBody">
+              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:1rem;">No earnings logged yet. Complete tasks and log earnings to see history.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS MODAL ===== -->
+<div id="settingsModal" class="hidden" style="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;">
+  <div class="panel" style="width:90%;max-width:450px;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <div class="panel-title" style="margin-bottom:0;">Settings</div>
+      <button class="btn btn-outline btn-sm" id="closeSettingsBtn">Close</button>
+    </div>
+    <label for="settModel">Model</label>
+    <select id="settModel" style="margin-bottom:0.5rem;">
+      <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+      <option value="claude-opus-4-20250514">Claude Opus 4</option>
+      <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5</option>
+    </select>
+    <label for="settPersona">Persona</label>
+    <input type="text" id="settPersona" style="margin-bottom:0.5rem;">
+    <label for="settAge">Age Range</label>
+    <select id="settAge" style="margin-bottom:0.5rem;">
+      <option value="18-24">18-24</option><option value="25-34">25-34</option><option value="35-44">35-44</option><option value="45-54">45-54</option><option value="55+">55+</option>
+    </select>
+    <label for="settStyle">Style</label>
+    <select id="settStyle" style="margin-bottom:0.5rem;">
+      <option value="natural and conversational">Natural</option>
+      <option value="detailed and thoughtful">Detailed</option>
+      <option value="brief and direct">Brief</option>
+    </select>
+    <label for="settTemp">Temperature (<span id="tempVal">0.6</span>)</label>
+    <input type="range" id="settTemp" min="0" max="2" step="0.1" value="0.6" style="margin-bottom:0.5rem;">
+    <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border);">
+    <button class="btn btn-danger btn-sm" id="clearDataBtn">Clear All Data</button>
+    <button class="btn btn-outline btn-sm" id="disconnectBtn" style="margin-left:0.5rem;">Disconnect API Key</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+'use strict';
+
+// ==================== STATE ====================
+// Auto-detect server URL: localhost:3000 locally, same origin when remote
+// (server.js serves both static files at /kimmy/ and API at /api/)
+function getDefaultServerUrl() {
+  const saved = localStorage.getItem('kimmy_serverUrl');
+  if (saved) return saved;
+  const h = location.hostname;
+  if (h === 'localhost' || h === '127.0.0.1' || h.startsWith('192.168.')) return 'http://localhost:3000';
+  // Remote: static files & API are on the same server (server.js port 3000)
+  return location.origin;
+}
+
+let config = {
+  model: localStorage.getItem('kimmy_model') || 'claude-sonnet-4-20250514',
+  serverUrl: getDefaultServerUrl(),
+  persona: localStorage.getItem('kimmy_persona') || 'Alex',
+  age: localStorage.getItem('kimmy_age') || '25-34',
+  style: localStorage.getItem('kimmy_style') || 'natural and conversational',
+  temperature: 0.6,
+};
+let surveyContext = []; // [{q, a}]
+let sessionStart = Date.now();
+let currentAbort = null;
+let isStreaming = false;
+
+// ==================== DB (IndexedDB) ====================
+const DB_NAME = 'KimmyDB';
+const DB_VERSION = 1;
+let db = null;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('tasks')) {
+        const store = d.createObjectStore('tasks', { keyPath: 'id', autoIncrement: true });
+        store.createIndex('date', 'date');
+        store.createIndex('platform', 'platform');
+      }
+      if (!d.objectStoreNames.contains('config')) {
+        d.createObjectStore('config', { keyPath: 'key' });
+      }
+    };
+    req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+    req.onerror = (e) => reject(e.target.error);
+  });
+}
+
+function dbPut(store, data) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite');
+    tx.objectStore(store).put(data);
+    tx.oncomplete = () => resolve();
+    tx.onerror = (e) => reject(e.target.error);
+  });
+}
+
+function dbGetAll(store) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = (e) => reject(e.target.error);
+  });
+}
+
+function dbGet(store, key) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = (e) => reject(e.target.error);
+  });
+}
+
+function dbClear(store) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite');
+    tx.objectStore(store).clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = (e) => reject(e.target.error);
+  });
+}
+
+// ==================== CLAUDE API (via server proxy or direct) ====================
+async function callClaude(systemPrompt, messages, { stream = true, maxTokens = 500 } = {}) {
+  // Client-side mode: call Anthropic API directly from browser
+  if (config.serverUrl === 'CLIENT_MODE' || !config.serverUrl) {
+    const apiKey = window.claudeApiKey || window.parent?.claudeApiKey;
+    if (!apiKey) {
+      throw new Error('No API key found. Please go back to index.html and enter your API key in client-side mode.');
+    }
+    return await callClaudeDirect(apiKey, systemPrompt, messages, { stream, maxTokens });
+  }
+
+  // Server mode: call via backend proxy
+  const url = `${config.serverUrl}/api/kimmy/chat`;
+  const body = {
+    model: config.model,
+    system: systemPrompt,
+    messages,
+    temperature: config.temperature,
+    max_tokens: maxTokens,
+    stream,
+  };
+
+  const controller = new AbortController();
+  currentAbort = controller;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: controller.signal,
+  });
+
+  if (!response.ok) {
+    const errBody = await response.text().catch(() => '');
+    if (response.status === 401) throw new Error('Invalid API key on server. Check .env ANTHROPIC_API_KEY.');
+    if (response.status === 429) throw new Error('Rate limited. Please wait a moment and try again.');
+    if (response.status === 503) throw new Error('Server not configured. Set ANTHROPIC_API_KEY in .env.');
+    throw new Error(`API error ${response.status}: ${errBody.slice(0, 200)}`);
+  }
+
+  return response;
+}
+
+// Direct call to Anthropic API (client-side mode)
+async function callClaudeDirect(apiKey, systemPrompt, messages, { stream = true, maxTokens = 500 } = {}) {
+  const url = 'https://api.anthropic.com/v1/messages';
+  const body = {
+    model: config.model,
+    system: systemPrompt,
+    messages,
+    temperature: config.temperature,
+    max_tokens: maxTokens,
+    stream,
+  };
+
+  const controller = new AbortController();
+  currentAbort = controller;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify(body),
+    signal: controller.signal,
+  });
+
+  if (!response.ok) {
+    const errBody = await response.text().catch(() => '');
+    if (response.status === 401) throw new Error('Invalid Anthropic API key. Please check your key.');
+    if (response.status === 429) throw new Error('Rate limited by Anthropic. Please wait a moment and try again.');
+    throw new Error(`Anthropic API error ${response.status}: ${errBody.slice(0, 200)}`);
+  }
+
+  return response;
+}
+
+async function streamResponse(systemPrompt, userMessages, onChunk, onComplete, onError, opts = {}) {
+  try {
+    isStreaming = true;
+    const response = await retryWithBackoff(() => callClaude(systemPrompt, userMessages, { stream: true, ...opts }));
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let fullText = '';
+    let usage = null;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('event:') && !trimmed.startsWith('data:')) continue;
+
+        if (trimmed.startsWith('data: ')) {
+          const data = trimmed.slice(6);
+          if (data === '[DONE]') {
+            onComplete(fullText, usage);
+            isStreaming = false;
+            currentAbort = null;
+            return;
+          }
+          try {
+            const parsed = JSON.parse(data);
+            // Anthropic streaming format
+            if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+              fullText += parsed.delta.text;
+              onChunk(parsed.delta.text, fullText);
+            }
+            if (parsed.type === 'message_delta' && parsed.usage) {
+              usage = parsed.usage;
+            }
+            if (parsed.type === 'message_stop') {
+              onComplete(fullText, usage);
+              isStreaming = false;
+              currentAbort = null;
+              return;
+            }
+            // Handle error events
+            if (parsed.type === 'error') {
+              throw new Error(parsed.error?.message || 'Stream error');
+            }
+          } catch (e) {
+            if (e.message && e.message !== 'Stream error' && !e.message.includes('JSON')) {
+              throw e;
+            }
+          }
+        }
+      }
+    }
+    if (fullText) onComplete(fullText, usage);
+  } catch (err) {
+    if (err.name === 'AbortError') { onComplete('(Cancelled)', null); }
+    else { onError(err); }
+  } finally {
+    isStreaming = false;
+    currentAbort = null;
+  }
+}
+
+async function callClaudeSync(systemPrompt, messages, opts = {}) {
+  const response = await retryWithBackoff(() => callClaude(systemPrompt, messages, { stream: false, ...opts }));
+  const json = await response.json();
+  return {
+    content: json.content?.[0]?.text || '',
+    usage: json.usage || null,
+  };
+}
+
+async function retryWithBackoff(fn, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (err.message?.includes('429') && i < maxRetries - 1) {
+        const delay = Math.min(1000 * Math.pow(2, i), 30000) * (0.5 + Math.random());
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
+async function testServer() {
+  // Client-side mode: test API key directly with a simple request
+  if (config.serverUrl === 'CLIENT_MODE' || !config.serverUrl) {
+    const apiKey = window.claudeApiKey;
+    if (!apiKey) throw new Error('No API key configured for client-side mode');
+    // Test the key with a minimal request
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: config.model || 'claude-sonnet-4-20250514',
+          max_tokens: 5,
+          messages: [{ role: 'user', content: 'Hi' }]
+        })
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error?.message || `API error ${response.status}`);
+      }
+      return true;
+    } catch (err) {
+      throw new Error(`Client-side API test failed: ${err.message}`);
+    }
+  }
+
+  // Server mode: test backend health
+  const resp = await fetch(`${config.serverUrl}/api/kimmy/status`);
+  if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
+  const data = await resp.json();
+  if (!data.active) throw new Error('ANTHROPIC_API_KEY not set in server .env');
+  return true;
+}
+
+// ==================== PROMPT BUILDING ====================
+function buildSurveyPrompt(question, questionType) {
+  // Anthropic format: system is separate, messages alternate user/assistant
+  const contextMsgs = surveyContext.slice(-10).flatMap(({ q, a }) => [
+    { role: 'user', content: q },
+    { role: 'assistant', content: a },
+  ]);
+
+  const positionSummary = surveyContext.length > 0
+    ? `Previous positions taken: ${surveyContext.map(c => c.a.slice(0, 60)).join('; ')}`
+    : 'No prior positions established yet.';
+
+  const typeInstructions = {
+    multiple_choice: 'Select the single best option and briefly explain why it fits. Format: "Selected: [option]\\nReasoning: [brief explanation]"',
+    likert: 'Provide a rating on the given scale with a brief justification. Format: "Rating: [number]\\nReasoning: [brief explanation]"',
+    open_ended: 'Respond in 2-4 sentences with specific, plausible details. Sound natural and personal, not generic.',
+    ranking: 'Order the items by stated priority. Format: "Ranking: [ordered list]\\nReasoning: [brief explanation of top and bottom choices]"',
+    grid: 'Provide ratings for each row, ensuring consistency with prior positions. Format each as "Item: [rating]"',
+  };
+
+  const system = `You are ${config.persona}, a thoughtful ${config.age} year old participating in online market research. Provide ${config.style} responses that sound authentically human.
+
+RULES:
+- Stay consistent with previous answers in this survey session
+- Match the expected response length for the question type
+- Never mention AI, language models, or automated tools
+- Include plausible personal details when relevant
+- For attention checks: follow the instruction exactly
+- ${positionSummary}
+
+RESPONSE TYPE: ${typeInstructions[questionType] || typeInstructions.open_ended}`;
+
+  const messages = [...contextMsgs, { role: 'user', content: question }];
+  return { system, messages };
+}
+
+function buildMicrotaskPrompt(task, taskType) {
+  const instructions = {
+    data_entry: 'Extract and format the data cleanly. Output structured data ready for direct copy-paste into forms or spreadsheets.',
+    content_moderation: 'Analyze the content against standard community guidelines. Provide: verdict (approve/flag/reject), confidence level, and brief reasoning.',
+    writing: 'Write the requested content. Match the specified tone, length, and format. Ensure originality and natural flow.',
+    translation: 'Translate accurately while preserving tone and cultural context. Flag any idioms or culturally-specific references.',
+    coding: 'Write clean, working code. Include brief comments for non-obvious logic. If debugging, identify the issue and provide the fix.',
+    general: 'Complete the task as described. Provide clear, actionable output.',
+  };
+
+  const system = `You are a skilled freelancer completing microtasks efficiently. ${instructions[taskType] || instructions.general}\n\nProvide output that is ready to submit. Be precise and professional.`;
+  return { system, messages: [{ role: 'user', content: task }] };
+}
+
+// ==================== UI HELPERS ====================
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+function toast(msg, duration = 2500) {
+  const el = $('#toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), duration);
+}
+
+function setConfidence(text) {
+  const badge = $('#confidenceBadge');
+  // Simple heuristic based on response length and specificity
+  const words = text.split(/\s+/).length;
+  let level = 'high';
+  if (words < 5) level = 'low';
+  else if (words < 15) level = 'medium';
+  badge.textContent = level.charAt(0).toUpperCase() + level.slice(1);
+  badge.className = `confidence ${level}`;
+  badge.classList.remove('hidden');
+}
+
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('Copied to clipboard');
+  } catch {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('Copied to clipboard');
+  }
+}
+
+function formatMoney(n) { return '$' + Number(n).toFixed(2); }
+
+function updatePersonaPreview() {
+  const name = $('#personaName')?.value || config.persona;
+  const age = $('#personaAge')?.value || config.age;
+  const style = $('#personaStyle')?.value || config.style;
+  const el = $('#personaPreview');
+  if (el) el.textContent = `"Hi, I'm ${name}, ${age}. I respond in a ${style} way."`;
+}
+
+// ==================== EARNINGS ====================
+async function logEarning(amount, platform, taskType = 'survey', timeSpentMin = 0) {
+  const record = {
+    date: new Date().toISOString(),
+    platform,
+    type: taskType,
+    amount: parseFloat(amount) || 0,
+    timeSpentMin,
+    timestamp: Date.now(),
+  };
+  await dbPut('tasks', record);
+  await updateEarningsDisplay();
+  toast(`Logged ${formatMoney(amount)} from ${platform}`);
+}
+
+async function updateEarningsDisplay() {
+  const tasks = await dbGetAll('tasks');
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+  const weekAgo = new Date(now - 7 * 86400000);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  let today = 0, week = 0, month = 0, total = 0, totalTime = 0;
+  for (const t of tasks) {
+    const d = new Date(t.date);
+    total += t.amount;
+    totalTime += t.timeSpentMin || 0;
+    if (t.date.slice(0, 10) === todayStr) today += t.amount;
+    if (d >= weekAgo) week += t.amount;
+    if (d >= monthStart) month += t.amount;
+  }
+
+  const sessionHours = (Date.now() - sessionStart) / 3600000;
+  const avgRate = sessionHours > 0.01 ? today / sessionHours : 0;
+
+  // Update cards
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('earnToday', formatMoney(today));
+  set('earnWeek', formatMoney(week));
+  set('earnMonth', formatMoney(month));
+  set('earnTotal', formatMoney(total));
+  set('earnAvgRate', formatMoney(avgRate) + '/hr');
+  set('earnTaskCount', tasks.length);
+
+  // Header stats
+  set('headerEarned', formatMoney(today));
+  set('headerTasks', tasks.length);
+  set('headerRate', formatMoney(avgRate) + '/hr');
+
+  // History table
+  const tbody = $('#historyBody');
+  if (tbody) {
+    if (tasks.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:1rem;">No earnings logged yet.</td></tr>';
+    } else {
+      const sorted = [...tasks].sort((a, b) => b.timestamp - a.timestamp).slice(0, 50);
+      tbody.innerHTML = sorted.map(t => {
+        const d = new Date(t.date);
+        const rate = t.timeSpentMin > 0 ? formatMoney((t.amount / t.timeSpentMin) * 60) + '/hr' : '-';
+        return `<tr>
+          <td>${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</td>
+          <td>${t.platform}</td>
+          <td>${t.type}</td>
+          <td>${formatMoney(t.amount)}</td>
+          <td>${t.timeSpentMin ? t.timeSpentMin + 'm' : '-'}</td>
+          <td>${rate}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+}
+
+function exportCSV() {
+  dbGetAll('tasks').then(tasks => {
+    if (tasks.length === 0) { toast('No data to export'); return; }
+    const headers = ['Date', 'Platform', 'Type', 'Amount', 'TimeSpentMin'];
+    const rows = tasks.map(t => [t.date, t.platform, t.type, t.amount, t.timeSpentMin || 0]);
+    const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kimmy-earnings-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('CSV exported');
+  });
+}
+
+// ==================== CONTEXT MANAGEMENT ====================
+function addToContext(q, a) {
+  surveyContext.push({ q, a });
+  if (surveyContext.length > 20) surveyContext.shift();
+  updateContextDisplay();
+}
+
+function updateContextDisplay() {
+  const el = $('#contextList');
+  const count = $('#contextCount');
+  if (count) count.textContent = surveyContext.length;
+  if (el) {
+    if (surveyContext.length === 0) {
+      el.innerHTML = '<em>Previous Q&A from this survey session will appear here for consistency.</em>';
+    } else {
+      el.innerHTML = surveyContext.map((c, i) =>
+        `<div style="margin-bottom:0.3rem;"><strong>Q${i+1}:</strong> ${escHtml(c.q.slice(0, 80))}... <strong>A:</strong> ${escHtml(c.a.slice(0, 80))}...</div>`
+      ).join('');
+      el.scrollTop = el.scrollHeight;
+    }
+  }
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ==================== MAIN LOGIC ====================
+let lastResponse = '';
+let lastQuestion = '';
+
+function handleGenerate() {
+  const question = $('#questionInput').value.trim();
+  if (!question) { toast('Enter a question first'); return; }
+  if (isStreaming) { if (currentAbort) currentAbort.abort(); return; }
+
+  lastQuestion = question;
+  const questionType = $('#questionType').value;
+  const { system, messages } = buildSurveyPrompt(question, questionType);
+  const box = $('#responseBox');
+  const genBtn = $('#generateBtn');
+
+  box.textContent = '';
+  box.classList.add('streaming');
+  genBtn.innerHTML = '<span class="spinner"></span> Stop';
+  $('#approveBtn').disabled = true;
+  $('#copyBtn').disabled = true;
+  $('#regenBtn').disabled = true;
+  $('#editBtn').disabled = true;
+  $('#confidenceBadge').classList.add('hidden');
+  $('#tokenInfo').classList.add('hidden');
+
+  streamResponse(system, messages,
+    (chunk, full) => {
+      box.textContent = full;
+      const cursor = document.createElement('span');
+      cursor.className = 'cursor';
+      box.appendChild(cursor);
+    },
+    (fullText, usage) => {
+      box.classList.remove('streaming');
+      box.textContent = fullText;
+      lastResponse = fullText;
+      genBtn.textContent = 'Generate Answer';
+      $('#approveBtn').disabled = false;
+      $('#copyBtn').disabled = false;
+      $('#regenBtn').disabled = false;
+      $('#editBtn').disabled = false;
+      if (fullText && fullText !== '(Cancelled)') setConfidence(fullText);
+      if (usage) {
+        const info = $('#tokenInfo');
+        info.textContent = `Tokens: ${usage.input_tokens || '?'} in / ${usage.output_tokens || '?'} out`;
+        info.classList.remove('hidden');
+      }
+    },
+    (err) => {
+      box.classList.remove('streaming');
+      box.textContent = `Error: ${err.message}`;
+      box.style.color = 'var(--danger)';
+      genBtn.textContent = 'Generate Answer';
+      setTimeout(() => box.style.color = '', 3000);
+    },
+    { maxTokens: questionType === 'open_ended' ? 300 : 200 }
+  );
+}
+
+function handleMicroGenerate() {
+  const task = $('#microInput').value.trim();
+  if (!task) { toast('Describe the task first'); return; }
+  if (isStreaming) { if (currentAbort) currentAbort.abort(); return; }
+
+  const taskType = $('#microTaskType').value;
+  const { system, messages } = buildMicrotaskPrompt(task, taskType);
+  const box = $('#microResponseBox');
+  const genBtn = $('#microGenBtn');
+
+  box.textContent = '';
+  box.classList.add('streaming');
+  genBtn.innerHTML = '<span class="spinner"></span> Stop';
+  $('#microCopyBtn').disabled = true;
+  $('#microRegenBtn').disabled = true;
+
+  streamResponse(system, messages,
+    (chunk, full) => {
+      box.textContent = full;
+      const cursor = document.createElement('span');
+      cursor.className = 'cursor';
+      box.appendChild(cursor);
+    },
+    (fullText, usage) => {
+      box.classList.remove('streaming');
+      box.textContent = fullText;
+      genBtn.textContent = 'Process Task';
+      $('#microCopyBtn').disabled = false;
+      $('#microRegenBtn').disabled = false;
+      if (usage) {
+        const info = $('#microTokenInfo');
+        info.textContent = `Tokens: ${usage.input_tokens || '?'} in / ${usage.output_tokens || '?'} out`;
+        info.classList.remove('hidden');
+      }
+    },
+    (err) => {
+      box.classList.remove('streaming');
+      box.textContent = `Error: ${err.message}`;
+      genBtn.textContent = 'Process Task';
+    },
+    { maxTokens: 1000 }
+  );
+
+  $('#microCopyBtn').onclick = () => copyToClipboard($('#microResponseBox').textContent);
+  $('#microRegenBtn').onclick = handleMicroGenerate;
+}
+
+// ==================== INITIALIZATION ====================
+async function init() {
+  await openDB();
+
+  // Load saved config
+  const savedConfig = await dbGet('config', 'userConfig').catch(() => null);
+  if (savedConfig?.value) Object.assign(config, savedConfig.value);
+
+  // Setup event listeners
+  setupSetupScreen();
+  setupAppScreen();
+  setupKeyboardShortcuts();
+
+  updatePersonaPreview();
+  await updateEarningsDisplay();
+
+  // Check for client-side mode from index.html redirect
+  const isClientMode = localStorage.getItem('kimmy_clientMode') === 'true';
+  if (isClientMode && window.claudeApiKey) {
+    // Client mode with API key in memory
+    config.serverUrl = 'CLIENT_MODE';
+    $('#screen-setup').classList.add('hidden');
+    $('#screen-app').classList.remove('hidden');
+    sessionStart = Date.now();
+    toast('Connected in client-side mode');
+    return;
+  }
+
+  // Auto-connect if coming from the connect screen (serverUrl saved)
+  if (config.serverUrl && config.serverUrl !== 'CLIENT_MODE') {
+    try {
+      await testServer();
+      await dbPut('config', { key: 'userConfig', value: config });
+      $('#screen-setup').classList.add('hidden');
+      $('#screen-app').classList.remove('hidden');
+      sessionStart = Date.now();
+    } catch (_) { /* show setup screen if auto-connect fails */ }
+  }
+}
+
+function setupSetupScreen() {
+  // Set server URL from config (auto-detected or saved)
+  if (config.serverUrl && config.serverUrl !== 'CLIENT_MODE') {
+    $('#serverUrl').value = config.serverUrl;
+  }
+
+  // Check for client mode flag
+  const isClientMode = localStorage.getItem('kimmy_clientMode') === 'true';
+  if (isClientMode) {
+    config.serverUrl = 'CLIENT_MODE';
+    $('#serverUrl').value = 'CLIENT_MODE (Direct Browser Mode)';
+    $('#serverUrl').disabled = true;
+  }
+
+  // Persona preview
+  $('#personaName').oninput = updatePersonaPreview;
+  $('#personaAge').onchange = updatePersonaPreview;
+  $('#personaStyle').onchange = updatePersonaPreview;
+
+  // Connect button
+  $('#connectBtn').onclick = async () => {
+    const status = $('#keyStatus');
+    const btn = $('#connectBtn');
+    status.classList.remove('hidden', 'ok', 'err');
+    status.classList.add('pending');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Connecting...';
+
+    config.model = $('#modelSelect').value;
+    const serverUrlVal = ($('#serverUrl')?.value || '').replace(/\/$/, '');
+
+    // Check if client mode
+    if (serverUrlVal === 'CLIENT_MODE (Direct Browser Mode)' || serverUrlVal === 'CLIENT_MODE') {
+      config.serverUrl = 'CLIENT_MODE';
+      localStorage.setItem('kimmy_serverUrl', 'CLIENT_MODE');
+      localStorage.setItem('kimmy_clientMode', 'true');
+
+      // Check for API key in memory
+      if (!window.claudeApiKey) {
+        status.classList.remove('pending');
+        status.classList.add('err');
+        status.textContent = 'No API key found. Please go back to index.html and enter your API key first.';
+        btn.disabled = false;
+        btn.textContent = 'Connect & Start Earning';
+        return;
+      }
+
+      status.textContent = 'Testing API key...';
+      try {
+        await testServer();
+        status.classList.remove('pending');
+        status.classList.add('ok');
+        status.textContent = 'Connected to Claude AI (client-side mode)!';
+
+        await dbPut('config', { key: 'userConfig', value: config });
+
+        setTimeout(() => {
+          $('#screen-setup').classList.add('hidden');
+          $('#screen-app').classList.remove('hidden');
+          sessionStart = Date.now();
+        }, 500);
+      } catch (err) {
+        status.classList.remove('pending');
+        status.classList.add('err');
+        status.textContent = `Connection failed: ${err.message}`;
+        btn.disabled = false;
+        btn.textContent = 'Connect & Start Earning';
+      }
+      return;
+    }
+
+    // Server mode
+    config.serverUrl = serverUrlVal || 'http://localhost:3000';
+    if (config.serverUrl) localStorage.setItem('kimmy_serverUrl', config.serverUrl);
+    localStorage.removeItem('kimmy_clientMode');
+    status.textContent = 'Connecting to server...';
+
+    config.persona = $('#personaName').value.trim() || 'Alex';
+    config.age = $('#personaAge').value;
+    config.style = $('#personaStyle').value;
+
+    try {
+      await testServer();
+      status.classList.remove('pending');
+      status.classList.add('ok');
+      status.textContent = 'Connected to Claude AI!';
+
+      await dbPut('config', { key: 'userConfig', value: config });
+
+      setTimeout(() => {
+        $('#screen-setup').classList.add('hidden');
+        $('#screen-app').classList.remove('hidden');
+        sessionStart = Date.now();
+      }, 500);
+    } catch (err) {
+      status.classList.remove('pending');
+      status.classList.add('err');
+      status.textContent = `Connection failed: ${err.message}. Make sure server is running (node server.js).`;
+      btn.disabled = false;
+      btn.textContent = 'Connect & Start Earning';
+    }
+  };
+}
+
+function setupAppScreen() {
+  // Tabs
+  $$('.tab').forEach(tab => {
+    tab.onclick = () => {
+      $$('.tab').forEach(t => t.classList.remove('active'));
+      $$('.tab-content').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      $(`#tab-${tab.dataset.tab}`).classList.add('active');
+    };
+  });
+
+  // Survey: Generate
+  $('#generateBtn').onclick = handleGenerate;
+  $('#clearQBtn').onclick = () => { $('#questionInput').value = ''; };
+  $('#clearContextBtn').onclick = () => { surveyContext = []; updateContextDisplay(); toast('Context cleared'); };
+
+  // Survey: Response actions
+  $('#approveBtn').onclick = () => {
+    if (lastResponse && lastQuestion) {
+      addToContext(lastQuestion, lastResponse);
+      toast('Approved & added to context');
+      $('#questionInput').value = '';
+      $('#responseBox').innerHTML = '<em style="color:var(--text-muted);">Response will appear here...</em>';
+      $('#approveBtn').disabled = true;
+      $('#confidenceBadge').classList.add('hidden');
+    }
+  };
+  $('#copyBtn').onclick = () => copyToClipboard(lastResponse);
+  $('#regenBtn').onclick = handleGenerate;
+  $('#editBtn').onclick = () => {
+    const box = $('#responseBox');
+    box.contentEditable = 'true';
+    box.focus();
+    box.style.borderColor = 'var(--warning)';
+    toast('Edit mode - click Approve when done');
+    box.onblur = () => {
+      box.contentEditable = 'false';
+      box.style.borderColor = '';
+      lastResponse = box.textContent;
+    };
+  };
+
+  // Log earnings
+  $('#logEarnBtn').onclick = () => {
+    const amount = parseFloat($('#earnAmount').value);
+    if (!amount || amount <= 0) { toast('Enter a valid amount'); return; }
+    const platform = $('#earnPlatform').value;
+    logEarning(amount, platform);
+    $('#earnAmount').value = '';
+  };
+
+  // Export
+  $('#exportCsvBtn').onclick = exportCSV;
+
+  // Microtasks
+  $('#microGenBtn').onclick = handleMicroGenerate;
+  $('#microClearBtn').onclick = () => { $('#microInput').value = ''; };
+
+  // Settings
+  $('#settingsBtn').onclick = () => {
+    // Sync settings modal with current config
+    const modal = $('#settingsModal');
+    $('#settModel').innerHTML = $('#modelSelect').innerHTML;
+    $('#settModel').value = config.model;
+    $('#settEndpoint').value = config.endpoint;
+    $('#settPersona').value = config.persona;
+    $('#settAge').value = config.age;
+    $('#settStyle').value = config.style;
+    $('#settTemp').value = config.temperature;
+    $('#tempVal').textContent = config.temperature;
+    modal.classList.remove('hidden');
+  };
+  $('#closeSettingsBtn').onclick = () => {
+    config.model = $('#settModel').value;
+    config.persona = $('#settPersona').value || 'Alex';
+    config.age = $('#settAge').value;
+    config.style = $('#settStyle').value;
+    config.temperature = parseFloat($('#settTemp').value);
+    dbPut('config', { key: 'userConfig', value: config });
+    $('#settingsModal').classList.add('hidden');
+    toast('Settings saved');
+  };
+  $('#settTemp').oninput = (e) => { $('#tempVal').textContent = e.target.value; };
+
+  $('#clearDataBtn').onclick = async () => {
+    if (confirm('Clear ALL earnings data and history? This cannot be undone.')) {
+      await dbClear('tasks');
+      await updateEarningsDisplay();
+      toast('All data cleared');
+    }
+  };
+  $('#disconnectBtn').onclick = () => {
+    surveyContext = [];
+    window.claudeApiKey = null;
+    localStorage.removeItem('kimmy_clientMode');
+    $('#screen-app').classList.add('hidden');
+    $('#screen-setup').classList.remove('hidden');
+    $('#keyStatus').classList.add('hidden');
+    toast('Disconnected');
+  };
+
+  // Client-side mode toggle on setup screen
+  const clientModeSection = $('#clientModeSection');
+  const securityNote = $('#securityNote');
+  const serverUrlInput = $('#serverUrl');
+  let clientModeEnabled = localStorage.getItem('kimmy_clientMode') === 'true';
+
+  function updateClientModeUI() {
+    if (clientModeEnabled) {
+      clientModeSection.style.display = 'block';
+      securityNote.textContent = 'Client-side mode: API calls go directly to Anthropic from your browser. API key is stored in memory only.';
+      securityNote.style.background = '#fef9c3';
+      securityNote.style.borderColor = '#fbbf24';
+      serverUrlInput.value = 'CLIENT_MODE (Direct Browser Mode)';
+      serverUrlInput.disabled = true;
+      $('#toggleClientModeBtn').textContent = '🖥️ Switch to server mode';
+    } else {
+      clientModeSection.style.display = 'none';
+      securityNote.textContent = 'Claude API key is stored securely on the server (.env). No keys are exposed to the browser.';
+      securityNote.style.background = '#f0fdf4';
+      securityNote.style.borderColor = '#bbf7d0';
+      if (serverUrlInput.value === 'CLIENT_MODE (Direct Browser Mode)') {
+        serverUrlInput.value = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://localhost:3000' : location.origin;
+      }
+      serverUrlInput.disabled = false;
+      $('#toggleClientModeBtn').textContent = '🔑 Switch to client-side mode (no server needed)';
+    }
+  }
+
+  // Initialize UI based on saved preference
+  if (clientModeEnabled) updateClientModeUI();
+
+  $('#toggleClientModeBtn').onclick = () => {
+    clientModeEnabled = !clientModeEnabled;
+    localStorage.setItem('kimmy_clientMode', clientModeEnabled ? 'true' : 'false');
+    updateClientModeUI();
+    if (clientModeEnabled) {
+      setTimeout(() => $('#clientApiKey')?.focus(), 100);
+    }
+  };
+
+  $('#saveClientKeyBtn').onclick = async () => {
+    const apiKey = $('#clientApiKey')?.value?.trim();
+    if (!apiKey) { toast('Please enter an API key'); return; }
+    if (!apiKey.startsWith('sk-ant-')) { toast('API key should start with "sk-ant-"'); return; }
+
+    window.claudeApiKey = apiKey;
+    toast('API key saved in memory');
+
+    // Test the key
+    const btn = $('#saveClientKeyBtn');
+    btn.disabled = true;
+    btn.textContent = 'Testing...';
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: config.model || 'claude-sonnet-4-20250514',
+          max_tokens: 5,
+          messages: [{ role: 'user', content: 'Hi' }]
+        })
+      });
+      if (response.ok) {
+        toast('API key is valid! Click Connect to start.');
+        $('#clientApiKey').style.borderColor = '#22c55e';
+      } else {
+        const error = await response.json().catch(() => ({}));
+        toast(`Invalid API key: ${error.error?.message || 'Check your key'}`);
+        $('#clientApiKey').style.borderColor = '#ef4444';
+      }
+    } catch (err) {
+      toast(`Error testing key: ${err.message}`);
+      $('#clientApiKey').style.borderColor = '#ef4444';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save';
+    }
+  };
+
+  // Allow Enter key to save API key
+  $('#clientApiKey')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') $('#saveClientKeyBtn').click();
+  });
+
+  // Close modal on backdrop click
+  $('#settingsModal').onclick = (e) => {
+    if (e.target === $('#settingsModal')) $('#closeSettingsBtn').click();
+  };
+}
+
+function setupKeyboardShortcuts() {
+  document.addEventListener('keydown', (e) => {
+    // Ctrl+Enter: Generate
+    if (e.ctrlKey && e.key === 'Enter') {
+      e.preventDefault();
+      if ($('#tab-survey').classList.contains('active')) handleGenerate();
+      else if ($('#tab-micro').classList.contains('active')) handleMicroGenerate();
+    }
+    // Ctrl+Shift+C: Copy response
+    if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+      e.preventDefault();
+      if (lastResponse) copyToClipboard(lastResponse);
+    }
+    // Ctrl+R: Regenerate (only when not in browser refresh context)
+    if (e.ctrlKey && e.key === 'r' && $('#questionInput')?.value.trim()) {
+      // Let browser refresh happen if no question
+    }
+    // Escape: close modal
+    if (e.key === 'Escape') {
+      if (!$('#settingsModal').classList.contains('hidden')) {
+        $('#closeSettingsBtn').click();
+      }
+    }
+  });
+}
+
+// ==================== BOOKMARKLET SUPPORT ====================
+// Auto-detect JSON pasted from bookmarklet
+$('#questionInput')?.addEventListener('input', (e) => {
+  const val = e.target.value.trim();
+  if (val.startsWith('{') && val.includes('"question"')) {
+    try {
+      const data = JSON.parse(val);
+      if (data.question) {
+        let formatted = data.question;
+        if (data.options?.length) {
+          formatted += '\n\nOptions:\n' + data.options.map((o, i) => `${i + 1}. ${o}`).join('\n');
+        }
+        e.target.value = formatted;
+        if (data.options?.length) $('#questionType').value = 'multiple_choice';
+        toast('Bookmarklet data detected & formatted');
+      }
+    } catch (_) { /* not JSON, ignore */ }
+  }
+});
+
+// ==================== START ====================
+init().catch(err => console.error('Kimmy init error:', err));
+
+})();
+</script>
+</body>
+</html>
