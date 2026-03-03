@@ -256,9 +256,76 @@ footer { max-width: 1240px; margin: 0 auto; padding: 58px 40px 32px;
   .hero-stats-grid { grid-template-columns: 1fr 1fr; }
   footer { grid-template-columns: 1fr; }
 }
+
+/* Calculator Gate */
+#pw-gate {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  background: radial-gradient(900px 500px at 50% 30%, rgba(167,201,184,0.10), transparent 55%),
+    linear-gradient(145deg, var(--bg-0), var(--bg-1) 45%, var(--bg-2));
+}
+#pw-gate.hidden { display: none; }
+.calc { width: 280px; background: var(--surface-strong); border: 1px solid var(--line); border-radius: 18px; padding: 20px; box-shadow: var(--shadow-1); }
+.calc-display { background: rgba(15,23,42,0.6); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; text-align: right; min-height: 52px; }
+.calc-expr { font-size: 0.8rem; color: var(--muted); min-height: 18px; }
+.calc-val { font-size: 1.6rem; font-weight: 700; color: var(--white); font-family: 'Inter', monospace; }
+.calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.calc-grid button {
+  padding: 16px 0; border: 1px solid var(--line); border-radius: 10px; font-size: 1.1rem;
+  font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: 'Inter', sans-serif;
+}
+.calc-btn-num { background: rgba(15,23,42,0.5); color: var(--white); }
+.calc-btn-num:hover { background: rgba(137,185,161,0.15); }
+.calc-btn-op { background: rgba(137,185,161,0.15); color: var(--accent-a); }
+.calc-btn-op:hover { background: rgba(137,185,161,0.25); }
+.calc-btn-eq { background: linear-gradient(90deg, #5f8673, #91b7a4); color: var(--white); border-color: rgba(137,185,161,0.5); }
+.calc-btn-eq:hover { box-shadow: 0 8px 22px rgba(145,183,164,0.28); }
+.calc-btn-clear { background: rgba(220,38,38,0.15); color: #f87171; }
+.calc-btn-clear:hover { background: rgba(220,38,38,0.25); }
+.calc-msg { text-align: center; margin-top: 12px; font-size: 0.85rem; min-height: 22px; font-weight: 600; }
+.calc-msg.ok { color: var(--ai-glow); }
+.calc-msg.fail { color: #f87171; }
+.calc-title { text-align: center; margin-bottom: 18px; }
+.calc-title h2 { font-size: 1.3rem; color: var(--white); margin-bottom: 4px; }
+.calc-title p { font-size: 0.8rem; color: var(--muted); }
 </style>
 </head>
 <body>
+
+<!-- CALCULATOR GATE -->
+<div id="pw-gate">
+  <div class="calc-title">
+    <h2>kimmy.</h2>
+    <p>Solve to enter</p>
+  </div>
+  <div class="calc">
+    <div class="calc-display">
+      <div class="calc-expr" id="calc-expr"></div>
+      <div class="calc-val" id="calc-val">0</div>
+    </div>
+    <div class="calc-grid">
+      <button class="calc-btn-clear" data-act="clear">C</button>
+      <button class="calc-btn-op" data-act="op" data-v="÷">÷</button>
+      <button class="calc-btn-op" data-act="op" data-v="×">×</button>
+      <button class="calc-btn-op" data-act="back">←</button>
+      <button class="calc-btn-num" data-act="num" data-v="7">7</button>
+      <button class="calc-btn-num" data-act="num" data-v="8">8</button>
+      <button class="calc-btn-num" data-act="num" data-v="9">9</button>
+      <button class="calc-btn-op" data-act="op" data-v="-">−</button>
+      <button class="calc-btn-num" data-act="num" data-v="4">4</button>
+      <button class="calc-btn-num" data-act="num" data-v="5">5</button>
+      <button class="calc-btn-num" data-act="num" data-v="6">6</button>
+      <button class="calc-btn-op" data-act="op" data-v="+">+</button>
+      <button class="calc-btn-num" data-act="num" data-v="1">1</button>
+      <button class="calc-btn-num" data-act="num" data-v="2">2</button>
+      <button class="calc-btn-num" data-act="num" data-v="3">3</button>
+      <button class="calc-btn-eq" data-act="eq" style="grid-row:span 2">=</button>
+      <button class="calc-btn-num" data-act="num" data-v="0" style="grid-column:span 2">0</button>
+      <button class="calc-btn-num" data-act="num" data-v=".">.</button>
+    </div>
+    <div class="calc-msg" id="calc-msg"></div>
+  </div>
+</div>
 
 <nav>
   <a href="#" class="logo">kimmy.</a>
@@ -634,6 +701,50 @@ function simulateLiveUpdates() {
     }
   }, 25000);
 }
+
+/* ── Calculator Gate ── */
+(function(){
+  if(sessionStorage.getItem('kimmy_unlocked')){
+    document.getElementById('pw-gate').classList.add('hidden');
+  }
+  const seq=[];
+  const exprEl=document.getElementById('calc-expr');
+  const valEl=document.getElementById('calc-val');
+  const msgEl=document.getElementById('calc-msg');
+  let cur='0', expr='', hasOp=false;
+
+  document.querySelector('.calc-grid').addEventListener('click',function(e){
+    const btn=e.target.closest('button'); if(!btn) return;
+    const act=btn.dataset.act, v=btn.dataset.v;
+    msgEl.textContent=''; msgEl.className='calc-msg';
+
+    if(act==='clear'){ cur='0'; expr=''; hasOp=false; seq.length=0; }
+    else if(act==='back'){ cur=cur.length>1?cur.slice(0,-1):'0'; }
+    else if(act==='num'){
+      seq.push(v);
+      cur = cur==='0'&&v!=='.'? v : cur+v;
+    }
+    else if(act==='op'){
+      seq.push(v);
+      expr=cur+' '+v+' '; cur='0'; hasOp=true;
+    }
+    else if(act==='eq'){
+      seq.push('=');
+      // Only unlock on exact sequence: 5 + 2 =
+      const key=seq.join('');
+      if(key==='5+2='){
+        msgEl.textContent='Access granted'; msgEl.className='calc-msg ok';
+        sessionStorage.setItem('kimmy_unlocked','1');
+        setTimeout(()=>{ document.getElementById('pw-gate').classList.add('hidden'); },600);
+      } else {
+        msgEl.textContent='Try again'; msgEl.className='calc-msg fail';
+        setTimeout(()=>{ cur='0'; expr=''; hasOp=false; seq.length=0; valEl.textContent='0'; exprEl.textContent=''; msgEl.textContent=''; },1200);
+        return;
+      }
+    }
+    valEl.textContent=cur; exprEl.textContent=expr;
+  });
+})();
 
 document.addEventListener('DOMContentLoaded', () => {
   renderDiscoveryFeed();
