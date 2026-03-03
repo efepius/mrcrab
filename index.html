@@ -177,6 +177,49 @@
     }
     .links a { color: #1d4ed8; text-decoration: none; }
     .links a:hover { text-decoration: underline; }
+
+    .api-key-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: monospace;
+      margin: 8px 0;
+    }
+
+    .api-key-section {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      background: #fefce8;
+      border: 1px solid #f59e0b;
+      border-radius: 10px;
+    }
+
+    .api-key-section.visible {
+      display: block;
+    }
+
+    .toggle-mode {
+      display: block;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--primary);
+      cursor: pointer;
+      text-decoration: underline;
+      text-align: center;
+    }
+
+    .warning-box {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      color: #92400e;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
   </style>
 </head>
 <body>
@@ -244,7 +287,7 @@
       <!-- Client-side mode (when no server available) -->
       <div class="api-key-section" id="clientModeSection">
         <div class="card-title">Direct Claude API Mode (No Server)</div>
-        <div class="warning">
+        <div class="warning-box">
           ⚠️ Your API key will be stored in browser memory only. Use server mode for better security.
         </div>
         <input 
