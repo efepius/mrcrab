@@ -203,21 +203,27 @@
 
     .toggle-mode {
       display: inline-block;
-      margin: 16px 0;
-      padding: 10px 20px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--primary);
-      background: #eff6ff;
-      border: 2px solid var(--primary);
-      border-radius: 999px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: #2563eb;
       cursor: pointer;
+      text-decoration: none;
       text-align: center;
+      padding: 8px 16px;
+      border: 1px solid #bfdbfe;
+      border-radius: 20px;
+      background: #eff6ff;
       transition: all 0.2s;
     }
     .toggle-mode:hover {
-      background: var(--primary);
-      color: white;
+      background: #dbeafe;
+      border-color: #93c5fd;
+    }
+    .mode-indicator {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+      text-align: center;
     }
 
     .warning-box {
@@ -239,10 +245,6 @@
     <section class="card">
       <p class="card-title">Connect to Claude AI</p>
       <div id="status" class="status note">Ready to connect.</div>
-
-      <div class="info-box" id="modeInfo" style="margin:12px 0; padding:12px; background:#f0f9ff; border:1px solid #0ea5e9; border-radius:8px; font-size:13px; color:#0369a1;">
-        💡 <strong>Server Mode:</strong> Enter a backend server URL below, or click the 🔑 button below to use your own Claude API key without a server.
-      </div>
 
       <div class="grid">
         <div class="field">
@@ -289,7 +291,13 @@
 
       <div id="personaPreview" class="persona-preview"></div>
 
-      <div class="actions">
+      <!-- Mode Toggle - Made more prominent -->
+      <div style="text-align: center; margin-top: 16px;">
+        <button type="button" class="toggle-mode" id="toggleMode">🔑 Switch to client-side mode (no server needed)</button>
+        <div class="mode-indicator" id="modeIndicator">Running in server mode (API key stored on backend)</div>
+      </div>
+
+      <div class="actions" style="margin-top: 20px;">
         <button id="connectBtn" type="button">Connect & Start Earning</button>
       </div>
 
@@ -299,20 +307,19 @@
 
       <!-- Client-side mode (when no server available) -->
       <div class="api-key-section" id="clientModeSection">
-        <div class="card-title">Direct Claude API Mode (No Server)</div>
+        <div class="card-title">Direct Claude API Mode (No Server Required)</div>
         <div class="warning-box">
-          ⚠️ Your API key will be stored in browser memory only. Use server mode for better security.
+          ⚠️ <strong>Security Notice:</strong> Your API key will be stored in browser memory only (not localStorage). Use server mode for production deployments.
         </div>
-        <input 
-          id="apiKeyInput" 
-          class="api-key-input" 
-          type="password" 
-          placeholder="Enter your Anthropic API key (sk-ant-...)"
+        <label for="apiKeyInput" style="font-size: 13px; color: #374151; font-weight: 600;">Anthropic API Key</label>
+        <input
+          id="apiKeyInput"
+          class="api-key-input"
+          type="password"
+          placeholder="sk-ant-api03-..."
         />
-        <button id="saveApiKeyBtn" type="button" style="width:100%">Save & Connect</button>
+        <button id="saveApiKeyBtn" type="button" style="width:100%; margin-top: 8px;">Save API Key & Test Connection</button>
       </div>
-
-      <button class="toggle-mode" id="toggleMode" type="button">🔑 Use Your Own API Key (No Server)</button>
     </section>
 
     <div class="links">
@@ -418,8 +425,17 @@
           }
 
           serverUrlEl.value = base;
-          setStatus('ok', `Connected to ${base} via ${matchedPath}`);
-          connectBtn.disabled = false;
+          setStatus('ok', `Connected to ${base} — launching Kimmy...`);
+
+          // Save config to localStorage so the app picks it up
+          localStorage.setItem('kimmy_serverUrl', base);
+          localStorage.setItem('kimmy_model', modelEl.value);
+          localStorage.setItem('kimmy_persona', personaNameEl.value);
+          localStorage.setItem('kimmy_age', ageRangeEl.value);
+          localStorage.setItem('kimmy_style', responseStyleEl.value);
+
+          // Redirect to the full app after a short delay
+          setTimeout(() => { window.location.href = (location.pathname.replace(/\/[^/]*$/, '') || '') + '/kimmy/app.html'; }, 600);
           return;
         } catch (err) {
           lastError = err && err.message ? err.message : String(err);
@@ -434,66 +450,73 @@
       connectBtn.disabled = false;
     }
 
-    // Default server URL:
-    // - local dev: current origin
-    // - remote/https: current origin (avoid forced localhost mixed-content issues)
-    serverUrlEl.value = window.location.origin || 'http://localhost:3000';
+    // Default server URL: use saved value, or detect context
+    const savedUrl = localStorage.getItem('kimmy_serverUrl');
+    const isGitHubPages = location.hostname.endsWith('.github.io');
+    if (savedUrl) {
+      serverUrlEl.value = savedUrl;
+    } else if (isGitHubPages) {
+      serverUrlEl.value = '';  // No backend on GitHub Pages
+    } else {
+      serverUrlEl.value = window.location.origin || 'http://localhost:3000';
+    }
 
     updatePersonaPreview();
     personaNameEl.addEventListener('input', updatePersonaPreview);
     ageRangeEl.addEventListener('change', updatePersonaPreview);
     responseStyleEl.addEventListener('change', updatePersonaPreview);
-    connectBtn.addEventListener('click', testConnection);
 
+    // Auto-enable client-side mode on GitHub Pages (no backend available)
+    if (isGitHubPages && !savedUrl) {
+      isClientMode = true;
+      updateModeUI();
+      setStatus('note', 'GitHub Pages detected — no server available. Enter your Anthropic API key below, or paste a tunnel URL in Server URL and switch to server mode.');
+    }
     // Client-side mode handling
     const clientModeSection = document.getElementById('clientModeSection');
     const serverModeFoot = document.getElementById('serverModeFoot');
     const toggleMode = document.getElementById('toggleMode');
+    const modeIndicator = document.getElementById('modeIndicator');
     const apiKeyInput = document.getElementById('apiKeyInput');
     const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
-    const modeInfo = document.getElementById('modeInfo');
-    const serverUrlField = document.getElementById('serverUrl');
     let isClientMode = false;
+    let isClientConnected = false;
 
-    toggleMode.addEventListener('click', () => {
-      isClientMode = !isClientMode;
+    function updateModeUI() {
       if (isClientMode) {
         clientModeSection.classList.add('visible');
-        serverModeFoot.textContent = 'Client-side mode: API calls go directly to Anthropic from your browser.';
-        toggleMode.textContent = '🔌 Switch to Server Mode';
-        connectBtn.textContent = 'Launch Kimmy →';
-        modeInfo.innerHTML = '🔑 <strong>Client Mode:</strong> Your API key is used directly in the browser. Key is never sent to any server.';
-        modeInfo.style.background = '#fefce8';
-        modeInfo.style.borderColor = '#eab308';
-        modeInfo.style.color = '#854d0e';
-        serverUrlField.disabled = true;
-        serverUrlField.style.opacity = '0.5';
-        apiKeyInput.focus();
+        serverModeFoot.textContent = 'Client-side mode: API calls go directly to Anthropic from your browser. API key stays in memory only.';
+        toggleMode.textContent = '🖥️ Switch to server mode';
+        modeIndicator.textContent = isClientConnected
+          ? 'Running in client-side mode (Connected ✓)'
+          : 'Running in client-side mode (Enter API key below)';
+        connectBtn.textContent = isClientConnected ? 'Launch Kimmy →' : 'Launch Kimmy (Enter API Key First)';
       } else {
         clientModeSection.classList.remove('visible');
         serverModeFoot.textContent = 'Claude API key is stored securely on the server (`.env`). No keys are exposed to the browser.';
-        toggleMode.textContent = '🔑 Use Your Own API Key (No Server)';
+        toggleMode.textContent = '🔑 Switch to client-side mode (no server needed)';
+        modeIndicator.textContent = 'Running in server mode (API key stored on backend)';
         connectBtn.textContent = 'Connect & Start Earning';
-        modeInfo.innerHTML = '💡 <strong>Server Mode:</strong> Enter a backend server URL below, or click the 🔑 button to use your own Claude API key without a server.';
-        modeInfo.style.background = '#f0f9ff';
-        modeInfo.style.borderColor = '#0ea5e9';
-        modeInfo.style.color = '#0369a1';
-        serverUrlField.disabled = false;
-        serverUrlField.style.opacity = '1';
+      }
+    }
+
+    toggleMode.addEventListener('click', () => {
+      isClientMode = !isClientMode;
+      updateModeUI();
+      if (isClientMode) {
+        setStatus('note', 'Client-side mode enabled. Enter your Anthropic API key below to connect directly.');
+        // Auto-focus the API key input
+        setTimeout(() => apiKeyInput.focus(), 100);
+      } else {
+        setStatus('note', 'Server mode enabled. Make sure your backend server is running.');
       }
     });
 
-    saveApiKeyBtn.addEventListener('click', async () => {
-      const apiKey = apiKeyInput.value.trim();
-      if (!apiKey || !apiKey.startsWith('sk-ant-')) {
-        setStatus('err', 'Please enter a valid Anthropic API key (starts with sk-ant-)');
-        return;
-      }
-      
-      // Test the API key with a simple request
-      setStatus('note', 'Testing API key...');
+    async function testApiKey(apiKey) {
+      setStatus('note', 'Testing API key with Anthropic...');
       saveApiKeyBtn.disabled = true;
-      
+      saveApiKeyBtn.textContent = 'Testing...';
+
       try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
@@ -508,36 +531,78 @@
             messages: [{ role: 'user', content: 'Hi' }]
           })
         });
-        
+
         if (response.ok) {
           // Store API key in memory (not localStorage for security)
           window.claudeApiKey = apiKey;
-          setStatus('ok', 'Connected! API key is valid. You can now use Kimmy.');
-          connectBtn.textContent = 'Connected ✓';
-          connectBtn.disabled = true;
+          isClientConnected = true;
+          setStatus('ok', '✓ API key is valid! You can now launch Kimmy.');
+          updateModeUI();
+          apiKeyInput.style.borderColor = '#22c55e';
         } else {
           const error = await response.json();
           setStatus('err', `API Error: ${error.error?.message || 'Invalid API key'}`);
+          apiKeyInput.style.borderColor = '#ef4444';
           saveApiKeyBtn.disabled = false;
+          saveApiKeyBtn.textContent = 'Save API Key & Test Connection';
         }
       } catch (err) {
-        setStatus('err', `Connection failed: ${err.message}`);
+        setStatus('err', `Connection failed: ${err.message}. Check your internet connection.`);
+        apiKeyInput.style.borderColor = '#ef4444';
         saveApiKeyBtn.disabled = false;
+        saveApiKeyBtn.textContent = 'Save API Key & Test Connection';
+      }
+    }
+
+    saveApiKeyBtn.addEventListener('click', async () => {
+      const apiKey = apiKeyInput.value.trim();
+      if (!apiKey) {
+        setStatus('err', 'Please enter your Anthropic API key');
+        apiKeyInput.focus();
+        return;
+      }
+      if (!apiKey.startsWith('sk-ant-')) {
+        setStatus('err', 'API key should start with "sk-ant-". Please check your key.');
+        apiKeyInput.focus();
+        return;
+      }
+      await testApiKey(apiKey);
+    });
+
+    // Allow Enter key to submit API key
+    apiKeyInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        saveApiKeyBtn.click();
       }
     });
 
-    // Modify testConnection to handle client mode
-    const originalTestConnection = testConnection;
+    // Single connect button handler that works for both modes
     connectBtn.addEventListener('click', async () => {
-      if (isClientMode && window.claudeApiKey) {
-        setStatus('ok', 'Already connected! API key is valid.');
+      if (isClientMode) {
+        if (!window.claudeApiKey) {
+          setStatus('err', 'Please enter your Anthropic API key in the client-side mode section below.');
+          clientModeSection.classList.add('visible');
+          apiKeyInput.focus();
+          apiKeyInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+        // Already have API key, proceed to launch
+        setStatus('ok', 'Launching Kimmy with client-side mode...');
+
+        // Save config to localStorage (without the API key for security)
+        localStorage.setItem('kimmy_serverUrl', 'CLIENT_MODE');
+        localStorage.setItem('kimmy_model', modelEl.value);
+        localStorage.setItem('kimmy_persona', personaNameEl.value);
+        localStorage.setItem('kimmy_age', ageRangeEl.value);
+        localStorage.setItem('kimmy_style', responseStyleEl.value);
+        localStorage.setItem('kimmy_clientMode', 'true');
+
+        // Redirect after short delay
+        setTimeout(() => { window.location.href = (location.pathname.replace(/\/[^/]*$/, '') || '') + '/kimmy/app.html'; }, 400);
         return;
       }
-      if (isClientMode && !window.claudeApiKey) {
-        setStatus('err', 'Please enter and save your API key first.');
-        clientModeSection.classList.add('visible');
-        return;
-      }
+
+      // Server mode - use the original testConnection
       await testConnection();
     });
   </script>
