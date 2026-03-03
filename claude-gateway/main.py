@@ -70,6 +70,10 @@ async def main():
         from platforms.webhook_server import WebhookServer
         bots.append(WebhookServer(session_manager, claude_client, rate_limiter, Config))
 
+    if Config.IDE_ENABLED:
+        from platforms.ide_server import IDEServer
+        bots.append(IDEServer(session_manager, claude_client, rate_limiter, Config))
+
     if not bots:
         logger.error("No platforms enabled. Check your .env configuration.")
         return

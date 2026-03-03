@@ -41,6 +41,11 @@ class Config:
     WEBHOOK_PORT = int(os.getenv("WEBHOOK_PORT", "8787"))
     WEBHOOK_ENABLED = os.getenv("WEBHOOK_ENABLED", "false").lower() == "true"
 
+    # IDE WebSocket server (Cursor, VS Code, JetBrains, etc.)
+    IDE_TOKEN = os.getenv("IDE_TOKEN", "")
+    IDE_PORT = int(os.getenv("IDE_PORT", "8788"))
+    IDE_ENABLED = os.getenv("IDE_ENABLED", "false").lower() == "true"
+
     # === Voice TTS (ElevenLabs — optional) ===
     ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
     ELEVENLABS_VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID", "21m00Tcm4TlvDq8ikWAM")
@@ -82,6 +87,7 @@ class Config:
                 ("iMessage", cls.IMESSAGE_ENABLED),
                 ("Slack", cls.SLACK_ENABLED),
                 ("Webhook", cls.WEBHOOK_ENABLED),
+                ("IDE", cls.IDE_ENABLED),
             ] if flag
         ]
 
@@ -89,7 +95,8 @@ class Config:
             raise ValueError(
                 "No platform tokens configured. Set at least one of:\n"
                 "TELEGRAM_BOT_TOKEN, DISCORD_BOT_TOKEN, WHATSAPP_SESSION_FILE,\n"
-                "BLUEBUBBLES_URL, SLACK_BOT_TOKEN+SLACK_APP_TOKEN, WEBHOOK_ENABLED=true"
+                "BLUEBUBBLES_URL, SLACK_BOT_TOKEN+SLACK_APP_TOKEN,\n"
+                "WEBHOOK_ENABLED=true, IDE_ENABLED=true"
             )
 
         print(f"[Mr. Crab] AI provider: {cls.AI_BASE_URL}")
