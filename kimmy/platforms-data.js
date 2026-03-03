@@ -1,7 +1,7 @@
 // Global Earning Platforms Database
 // Organized by continent, ranked by pay rate and reliability
 
-const platformsDB = {
+var platformsDB = {
   "north-america": [
     {
       name: "Scale AI Remotasks",
@@ -122,9 +122,69 @@ const platformsDB = {
       url: "https://www.respondent.io",
       verified: true,
       active: true
+    },
+    {
+      name: "Swagbucks",
+      region: "USA • Global",
+      rank: "B",
+      category: "surveys",
+      pay: "$3-10/hr",
+      payDetails: "Monthly: $50-300",
+      timeToFirstPay: "Instant $3 bonus",
+      difficulty: "Very Low",
+      description: "Earn from surveys, watching videos, shopping cashback, and web searches. Multiple income streams.",
+      tags: ["Surveys", "Cashback", "Videos", "Gift Cards"],
+      url: "https://www.swagbucks.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Rev.com",
+      region: "USA • Remote",
+      rank: "A",
+      category: "freelance",
+      pay: "$15-40/hr",
+      payDetails: "Weekly: $200-800",
+      timeToFirstPay: "Weekly PayPal",
+      difficulty: "Medium",
+      description: "Transcription, captioning, and subtitling. AI-assisted tools speed up work. Flexible hours.",
+      tags: ["Transcription", "Captions", "Audio", "Weekly Pay"],
+      url: "https://www.rev.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Lionsbridge AI",
+      region: "USA • Global",
+      rank: "A",
+      category: "ai-training",
+      pay: "$14-28/hr",
+      payDetails: "Monthly: $500-2,000",
+      timeToFirstPay: "Monthly",
+      difficulty: "Tests Required",
+      description: "AI data training for search engines and voice assistants. Flexible schedule, long-term projects.",
+      tags: ["AI Training", "Search Eval", "Flexible", "PayPal"],
+      url: "https://www.lionsbridge.ai",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Testbirds",
+      region: "USA • Germany",
+      rank: "B",
+      category: "testing",
+      pay: "$20-50/test",
+      payDetails: "Monthly: $100-500",
+      timeToFirstPay: "15 days",
+      difficulty: "Low",
+      description: "Bug testing for apps and websites. Get paid to find bugs. Mobile and desktop testing.",
+      tags: ["Bug Testing", "Apps", "Mobile", "PayPal"],
+      url: "https://www.testbirds.com",
+      verified: true,
+      active: true
     }
   ],
-  
+
   "europe": [
     {
       name: "Testable Minds",
@@ -215,9 +275,39 @@ const platformsDB = {
       url: "https://www.curiouscatapp.com",
       verified: true,
       active: true
+    },
+    {
+      name: "Toluna Influencers",
+      region: "UK • EU Wide",
+      rank: "B",
+      category: "surveys",
+      pay: "€5-15/hr",
+      payDetails: "Monthly: €50-250",
+      timeToFirstPay: "€20 min PayPal",
+      difficulty: "Low",
+      description: "Product testing and surveys across Europe. Test real products shipped to your door. PayPal or vouchers.",
+      tags: ["Product Testing", "Surveys", "EU", "Vouchers"],
+      url: "https://www.toluna.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Translated.com",
+      region: "Italy • Global",
+      rank: "A",
+      category: "freelance",
+      pay: "€0.06-0.12/word",
+      payDetails: "Monthly: €500-3,000",
+      timeToFirstPay: "30 days",
+      difficulty: "Language Skills",
+      description: "Professional translation network. 200+ languages. AI-assisted translation tools. Steady work.",
+      tags: ["Translation", "Languages", "Professional", "Wire"],
+      url: "https://translated.com",
+      verified: true,
+      active: true
     }
   ],
-  
+
   "asia": [
     {
       name: "Truelancer",
@@ -310,7 +400,7 @@ const platformsDB = {
       active: true
     }
   ],
-  
+
   "africa": [
     {
       name: "Andela Talent Cloud",
@@ -403,7 +493,7 @@ const platformsDB = {
       active: true
     }
   ],
-  
+
   "south-america": [
     {
       name: "Workana",
@@ -466,7 +556,7 @@ const platformsDB = {
       active: true
     }
   ],
-  
+
   "oceania": [
     {
       name: "UserTesting Australia",
@@ -529,7 +619,7 @@ const platformsDB = {
       active: true
     }
   ],
-  
+
   "global": [
     {
       name: "Data Annotation Tech (TELUS)",
@@ -620,12 +710,57 @@ const platformsDB = {
       url: "https://sproutgigs.com",
       verified: true,
       active: true
+    },
+    {
+      name: "Deel Freelance",
+      region: "Global • 150+ Countries",
+      rank: "A",
+      category: "freelance",
+      pay: "$20-100/hr",
+      payDetails: "Monthly: $1,000-8,000",
+      timeToFirstPay: "Net-30 or Instant",
+      difficulty: "Professional",
+      description: "Global payroll and freelance platform. Compliant contracts in 150+ countries. Crypto payouts available.",
+      tags: ["Global", "Contracts", "Crypto", "Professional"],
+      url: "https://www.deel.com",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Outlier AI",
+      region: "Global • AI Training",
+      rank: "S",
+      category: "ai-training",
+      pay: "$25-50/hr",
+      payDetails: "Monthly: $1,000-4,000",
+      timeToFirstPay: "Bi-weekly",
+      difficulty: "Expert Required",
+      description: "Train AI models by writing and evaluating responses. High pay for coding, math, and writing expertise.",
+      tags: ["AI Training", "Writing", "Coding", "Expert"],
+      url: "https://outlier.ai",
+      verified: true,
+      active: true
+    },
+    {
+      name: "Toloka AI",
+      region: "Global • AI Data",
+      rank: "B",
+      category: "ai-training",
+      pay: "$5-15/hr",
+      payDetails: "Monthly: $100-600",
+      timeToFirstPay: "Weekly PayPal",
+      difficulty: "Low",
+      description: "AI data labeling from Yandex. Image annotation, text classification. Available worldwide.",
+      tags: ["AI Data", "Labeling", "Global", "PayPal"],
+      url: "https://toloka.ai",
+      verified: true,
+      active: true
     }
   ]
 };
 
 // AI Discovery Feed Data
-const discoveryFeedData = [
+var discoveryFeedData = [
   { name: "DataAnnotation Tech", region: "Global", pay: "$45/hr", rank: "S", type: "new", category: "AI Training" },
   { name: "Testable Minds EU", region: "Europe", pay: "€25/study", rank: "S", type: "verified", category: "Academic" },
   { name: "Truelancer Pro", region: "India", pay: "₹800/hr", rank: "A", type: "high-value", category: "Freelance" },

@@ -379,6 +379,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 58px 40px 32px;
     <div class="discovery-content" id="discoveryFeed"></div>
   </div>
   
+  <div id="earnings"></div>
   <div class="stats-dashboard">
     <div class="stat-card"><div class="stat-number" id="statPlatforms">156</div><div class="stat-title">Verified Platforms</div><div class="stat-subtitle">Tested & earning today</div></div>
     <div class="stat-card"><div class="stat-number" id="statAvgPay">$18</div><div class="stat-title">Avg Hourly Rate</div><div class="stat-subtitle">Across all regions</div></div>
@@ -388,6 +389,7 @@ footer { max-width: 1240px; margin: 0 auto; padding: 58px 40px 32px;
 </section>
 
 <!-- GLOBAL PLATFORMS -->
+<div id="platforms"></div>
 <section class="global-platforms" id="global">
   <div class="global-header">
     <h2>🌍 Global Platform Intelligence</h2>
@@ -570,9 +572,9 @@ function showContinent(continentId) {
 function renderPlatforms(continentId) {
   const gridId = continentId === 'global' ? 'global-grid' : continentId + '-grid';
   const grid = document.getElementById(gridId);
-  if (!grid || !window.platformsDB) return;
-  
-  const platforms = window.platformsDB[continentId] || [];
+  if (!grid || typeof platformsDB === 'undefined') return;
+
+  const platforms = platformsDB[continentId] || [];
   
   grid.innerHTML = platforms.map(p => `
     <div class="platform-card" data-category="${p.category}">
@@ -633,14 +635,7 @@ function filterCategory(category, updateButtons = true) {
   });
 }
 
-const discoveryFeedData = [
-  { name: 'DataAnnot', region: 'Southeast Asia', category: 'AI Training', pay: '$12-18/hr', rank: 'A', type: 'new' },
-  { name: 'TryMyUI', region: 'USA • Remote', category: 'Testing', pay: '$10/test', rank: 'B', type: 'verified' },
-  { name: 'OneForma', region: 'Europe', category: 'Translation', pay: '€15-25/hr', rank: 'A', type: 'verified' },
-  { name: 'Respondent.io', region: 'Global', category: 'Research', pay: '$50-250/study', rank: 'S', type: 'high-pay' },
-  { name: 'Neevo', region: 'Global', category: 'AI Training', pay: '$8-20/hr', rank: 'B', type: 'verified' },
-  { name: 'TELUS International', region: 'Canada • Remote', category: 'AI Eval', pay: '$15-25/hr', rank: 'A', type: 'verified' }
-];
+// discoveryFeedData is loaded from platforms-data.js
 
 function renderDiscoveryFeed() {
   const container = document.getElementById('discoveryFeed');
